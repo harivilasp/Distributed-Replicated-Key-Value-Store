@@ -1,4 +1,5 @@
 #include "ClientStub.h"
+#include <iostream>
 
 ClientStub::ClientStub() {}
 
@@ -34,9 +35,12 @@ Record ClientStub::ReadRecord(LaptopOrder order)
 	size = order.Size();
 	if (socket.Send(buffer, size, 0))
 	{
+		std::cout << "ClientStub::ReadRecord: sent order" << std::endl;
+		// memset(buffer, 0, 32);
 		size = record.Size();
 		if (socket.Recv(buffer, size, 0))
 		{
+			std::cout << "ClientStub::ReadRecord: received record" << std::endl;
 			record.Unmarshal(buffer);
 		}
 	}

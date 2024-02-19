@@ -16,6 +16,20 @@ void ClientThreadClass::
 		std::cout << "Thread " << customer_id << " failed to connect" << std::endl;
 		return;
 	}
+	if (laptop_type == 3)
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			LaptopOrder order;
+			Record record;
+			order.SetOrder(customer_id, i, laptop_type);
+			record = stub.ReadRecord(order);
+			std::cout << "Thread " << customer_id << " record " << i << std::endl;
+			record.Print();
+		}
+		return;
+	}
+
 	for (int i = 0; i < num_orders; i++)
 	{
 		LaptopOrder order;

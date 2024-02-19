@@ -8,13 +8,6 @@
 #include "ServerSocket.h"
 #include "ServerThread.h"
 
-struct MapOp
-{
-	int opcode; // operation code : 1 - update value
-	int arg1;	// customer_id to apply the operation
-	int arg2;	// parameter for the operation
-};
-
 int main(int argc, char *argv[])
 {
 	int port;
@@ -24,8 +17,6 @@ int main(int argc, char *argv[])
 	LaptopFactory factory;
 	std::unique_ptr<ServerSocket> new_socket;
 	std::vector<std::thread> thread_vector;
-	std::vector<MapOp> smr_log;
-	std::map<int, int> customer_record;
 
 	if (argc < 3)
 	{
@@ -33,7 +24,7 @@ int main(int argc, char *argv[])
 		std::cout << argv[0] << "[port #] [# experts]" << std::endl;
 		// return 0;
 		port = 12345;
-		num_experts = 1;
+		num_experts = 3;
 	}
 	else
 	{

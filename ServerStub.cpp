@@ -1,3 +1,4 @@
+#include <iostream>
 #include "ServerStub.h"
 
 ServerStub::ServerStub() {}
@@ -14,6 +15,7 @@ LaptopOrder ServerStub::ReceiveOrder()
 	if (socket->Recv(buffer, order.Size(), 0))
 	{
 		order.Unmarshal(buffer);
+		std::cout << "ServerStub::ReceiveOrder: order.Size() = " << order.Size() << std::endl;
 	}
 	return order;
 }
@@ -22,6 +24,7 @@ int ServerStub::SendLaptop(LaptopInfo info)
 {
 	char buffer[32];
 	info.Marshal(buffer);
+	std::cout << "ServerStub::SendLaptop: info.Size() = " << info.Size() << std::endl;
 	return socket->Send(buffer, info.Size(), 0);
 }
 
@@ -29,5 +32,6 @@ int ServerStub::ReturnRecord(Record record)
 {
 	char buffer[32];
 	record.Marshal(buffer);
+	std::cout << "ServerStub::ReturnRecord: record.Size() = " << record.Size() << std::endl;
 	return socket->Send(buffer, record.Size(), 0);
 }

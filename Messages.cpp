@@ -173,10 +173,10 @@ Record::Record()
 	last_order = -1;
 }
 
-void Record::SetRecord(int cid, int last_order)
+void Record::SetRecord(int cid, int last_order_id)
 {
 	customer_id = cid;
-	last_order = last_order;
+	last_order = last_order_id;
 }
 int Record::GetCustomerId() { return customer_id; }
 int Record::GetLastOrder() { return last_order; }

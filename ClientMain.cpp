@@ -28,9 +28,9 @@ int main(int argc, char *argv[])
 		// return 0;
 		ip = "127.0.0.1";
 		port = 12345;
-		num_customers = 5;
+		num_customers = 2;
 		num_orders = 4;
-		laptop_type = 0;
+		laptop_type = 3;
 	}
 	else
 	{

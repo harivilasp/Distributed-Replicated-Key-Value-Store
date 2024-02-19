@@ -212,3 +212,86 @@ void Record::Print()
 	std::cout << "id " << customer_id << " ";
 	std::cout << "last " << last_order << std::endl;
 }
+
+ReplicaRequest::ReplicaRequest()
+{
+	factory_id = -1;
+	committed_index = -1;
+	last_index = -1;
+	op = {0, 0, 0};
+}
+
+void ReplicaRequest::SetRequest(int fid, int cindex, int lindex, MapOp op)
+{
+	factory_id = fid;
+	committed_index = cindex;
+	last_index = lindex;
+	this->op = op;
+}
+
+int ReplicaRequest::GetFactoryId() { return factory_id; }
+int ReplicaRequest::GetCommittedIndex() { return committed_index; }
+int ReplicaRequest::GetLastIndex() { return last_index; }
+MapOp ReplicaRequest::GetMapOp() { return op; }
+int ReplicaRequest::Size() { return sizeof(factory_id) + sizeof(committed_index) + sizeof(last_index) + sizeof(op); }
+void ReplicaRequest::Marshal(char *buffer)
+{
+
+	int net_factory_id = htonl(factory_id);
+	int net_committed_index = htonl(committed_index);
+	int net_last_index = htonl(last_index);
+	int net_opcode = htonl(op.opcode);
+	int net_arg1 = htonl(op.arg1);
+	int net_arg2 = htonl(op.arg2);
+	int offset = 0;
+
+	memcpy(buffer + offset, &net_factory_id, sizeof(net_factory_id));
+	offset += sizeof(net_factory_id);
+	memcpy(buffer + offset, &net_committed_index, sizeof(net_committed_index));
+	offset += sizeof(net_committed_index);
+	memcpy(buffer + offset, &net_last_index, sizeof(net_last_index));
+	offset += sizeof(net_last_index);
+	memcpy(buffer + offset, &net_opcode, sizeof(net_opcode));
+	offset += sizeof(net_opcode);
+	memcpy(buffer + offset, &net_arg1, sizeof(net_arg1));
+	offset += sizeof(net_arg1);
+	memcpy(buffer + offset, &net_arg2, sizeof(net_arg2));
+}
+void ReplicaRequest::Unmarshal(char *buffer)
+{
+	int net_factory_id;
+	int net_committed_index;
+	int net_last_index;
+	int net_opcode;
+	int net_arg1;
+	int net_arg2;
+	int offset = 0;
+
+	memcpy(&net_factory_id, buffer + offset, sizeof(net_factory_id));
+	offset += sizeof(net_factory_id);
+	memcpy(&net_committed_index, buffer + offset, sizeof(net_committed_index));
+	offset += sizeof(net_committed_index);
+	memcpy(&net_last_index, buffer + offset, sizeof(net_last_index));
+	offset += sizeof(net_last_index);
+	memcpy(&net_opcode, buffer + offset, sizeof(net_opcode));
+	offset += sizeof(net_opcode);
+	memcpy(&net_arg1, buffer + offset, sizeof(net_arg1));
+	offset += sizeof(net_arg1);
+	memcpy(&net_arg2, buffer + offset, sizeof(net_arg2));
+
+	factory_id = ntohl(net_factory_id);
+	committed_index = ntohl(net_committed_index);
+	last_index = ntohl(net_last_index);
+	op.opcode = ntohl(net_opcode);
+	op.arg1 = ntohl(net_arg1);
+	op.arg2 = ntohl(net_arg2);
+}
+void ReplicaRequest::Print()
+{
+	std::cout << "factory_id " << factory_id << " ";
+	std::cout << "committed_index " << committed_index << " ";
+	std::cout << "last_index " << last_index << " ";
+	std::cout << "opcode " << op.opcode << " ";
+	std::cout << "arg1 " << op.arg1 << " ";
+	std::cout << "arg2 " << op.arg2 << std::endl;
+}

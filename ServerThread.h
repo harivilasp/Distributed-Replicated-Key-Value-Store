@@ -18,13 +18,6 @@ struct ExpertRequest
 	std::promise<LaptopInfo> prom;
 };
 
-struct MapOp
-{
-	int opcode; // operation code : 1 - update value
-	int arg1;	// customer_id to apply the operation
-	int arg2;	// parameter for the operation
-};
-
 class LaptopFactory
 {
 private:
@@ -35,6 +28,15 @@ private:
 	std::map<int, int> customer_record;
 	std::mutex smr_lock;
 	std::mutex cr_lock;
+	std::vector<std::pair<std::string, int>> replicas;
+	int last_index;		 // the last index of the smr_log that has data
+	int committed_index; // the last index of the smr_log where the
+						 // MapOp of the log entry is committed and
+						 // applied to the customer_record
+	int primary_id;		 // the production factory id ( server id ).
+						 // initially set to -1.
+	int factory_id;		 // the id of the factory . This is assigned via
+						 // the command line arguments .
 
 	LaptopInfo CreateRegularLaptop(LaptopOrder order, int engineer_id);
 	LaptopInfo CreateCustomLaptop(LaptopOrder order, int engineer_id);

@@ -98,4 +98,39 @@ public:
 	void Print();
 };
 
+struct MapOp
+{
+	int opcode; // operation code : 1 - update value
+	int arg1;	// customer_id to apply the operation
+	int arg2;	// parameter for the operation
+};
+
+class ReplicaRequest
+{
+private:
+	int factory_id;
+	int committed_index;
+	int last_index;
+	MapOp op;
+
+public:
+	ReplicaRequest();
+	void operator=(const ReplicaRequest &req)
+	{
+		factory_id = req.factory_id;
+		committed_index = req.committed_index;
+		last_index = req.last_index;
+		op = req.op;
+	}
+	void SetRequest(int fid, int cindex, int lindex, MapOp op);
+	int GetFactoryId();
+	int GetCommittedIndex();
+	int GetLastIndex();
+	MapOp GetMapOp();
+	int Size();
+	void Marshal(char *buffer);
+	void Unmarshal(char *buffer);
+	void Print();
+};
+
 #endif // #ifndef __MESSAGES_H__

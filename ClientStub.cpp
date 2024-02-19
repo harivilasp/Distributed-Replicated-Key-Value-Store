@@ -46,3 +46,20 @@ Record ClientStub::ReadRecord(LaptopOrder order)
 	}
 	return record;
 }
+
+ReplicaRequest ClientStub::SendReplicaRequest(ReplicaRequest replicaRequest)
+{
+	char buffer[32];
+	replicaRequest.Marshal(buffer);
+	int size = replicaRequest.Size();
+	ReplicaRequest request;
+	if (socket.Send(buffer, size, 0))
+	{
+		size = request.Size();
+		if (socket.Recv(buffer, size, 0))
+		{
+			request.Unmarshal(buffer);
+		}
+	}
+	return request;
+}

@@ -83,6 +83,14 @@ void LaptopFactory::
 			record.Print();
 			cr_lock.unlock();
 			break;
+		case 4:
+			std::cout << "Engineer " << engineer_id << " is exiting" << std::endl;
+			{
+
+				std::lock_guard<std::mutex> lg(cr_lock);
+				replicas.push_back({"Engineer", engineer_id});
+			}
+			break;
 		default:
 			std::cout << "Undefined laptop type: "
 					  << laptop_type << std::endl;
@@ -113,5 +121,18 @@ void LaptopFactory::ExpertThread(int id)
 		std::this_thread::sleep_for(std::chrono::microseconds(100));
 		req->laptop.SetExpertId(id);
 		req->prom.set_value(req->laptop);
+	}
+}
+
+LaptopFactory::LaptopFactory()
+{
+	last_index = -1;
+	committed_index = -1;
+	primary_id = -1;
+	factory_id = -1;
+	for (auto &replica : replicas)
+	{
+		ClientStub stub;
+		replica_stubs.emplace_back(stub.Init(replica.first, replica.second));
 	}
 }

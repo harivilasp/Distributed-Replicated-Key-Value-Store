@@ -133,4 +133,19 @@ public:
 	void Print();
 };
 
+class ReplicaResponse
+{
+private:
+	bool status;
+
+public:
+	ReplicaResponse();
+	void SetStatus(bool stat);
+	bool GetStatus();
+	int Size();
+	void Marshal(char *buffer);
+	void Unmarshal(char *buffer);
+	void Print();
+};
+
 #endif // #ifndef __MESSAGES_H__

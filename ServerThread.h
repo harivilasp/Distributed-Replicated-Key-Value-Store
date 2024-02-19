@@ -11,6 +11,7 @@
 
 #include "Messages.h"
 #include "ServerSocket.h"
+#include "ClientStub.h"
 
 struct ExpertRequest
 {
@@ -29,6 +30,7 @@ private:
 	std::mutex smr_lock;
 	std::mutex cr_lock;
 	std::vector<std::pair<std::string, int>> replicas;
+	std::vector<ClientStub> replica_stubs;
 	int last_index;		 // the last index of the smr_log that has data
 	int committed_index; // the last index of the smr_log where the
 						 // MapOp of the log entry is committed and
@@ -44,6 +46,7 @@ private:
 public:
 	void EngineerThread(std::unique_ptr<ServerSocket> socket, int id);
 	void ExpertThread(int id);
+	LaptopFactory();
 };
 
 #endif // end of #ifndef __SERVERTHREAD_H__

@@ -295,3 +295,20 @@ void ReplicaRequest::Print()
 	std::cout << "arg1 " << op.arg1 << " ";
 	std::cout << "arg2 " << op.arg2 << std::endl;
 }
+
+ReplicaResponse::ReplicaResponse() { status = false; }
+void ReplicaResponse::SetStatus(bool stat) { status = stat; }
+bool ReplicaResponse::GetStatus() { return status; }
+int ReplicaResponse::Size() { return sizeof(status); }
+void ReplicaResponse::Marshal(char *buffer)
+{
+	int net_status = htonl(status);
+	memcpy(buffer, &net_status, sizeof(net_status));
+}
+void ReplicaResponse::Unmarshal(char *buffer)
+{
+	int net_status;
+	memcpy(&net_status, buffer, sizeof(net_status));
+	status = ntohl(net_status);
+}
+void ReplicaResponse::Print() { std::cout << "status " << status << std::endl; }

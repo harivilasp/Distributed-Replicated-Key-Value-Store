@@ -35,3 +35,22 @@ int ServerStub::ReturnRecord(Record record)
 	std::cout << "ServerStub::ReturnRecord: record.Size() = " << record.Size() << std::endl;
 	return socket->Send(buffer, record.Size(), 0);
 }
+
+ReplicaRequest ServerStub::ReceiveReplicaRequest(ReplicaRequest replicaRequest)
+{
+	char buffer[32];
+	if (socket->Recv(buffer, replicaRequest.Size(), 0))
+	{
+		replicaRequest.Unmarshal(buffer);
+		std::cout << "ServerStub::ReceiveReplicaRequest: replicaRequest.Size() = " << replicaRequest.Size() << std::endl;
+	}
+	return replicaRequest;
+}
+
+int ServerStub::SendReplicaResponse(ReplicaResponse replicaResponse)
+{
+	char buffer[32];
+	replicaResponse.Marshal(buffer);
+	std::cout << "ServerStub::SendReplicaResponse: replicaResponse.Size() = " << replicaResponse.Size() << std::endl;
+	return socket->Send(buffer, replicaResponse.Size(), 0);
+}

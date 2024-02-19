@@ -17,6 +17,8 @@ public:
 	LaptopOrder ReceiveOrder();
 	int SendLaptop(LaptopInfo info);
 	int ReturnRecord(Record record);
+	ReplicaRequest ReceiveReplicaRequest(ReplicaRequest replicaRequest);
+	int SendReplicaResponse(ReplicaResponse replicaResponse);
 };
 
 #endif // end of #ifndef __SERVER_STUB_H__

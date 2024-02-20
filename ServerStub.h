@@ -17,7 +17,7 @@ public:
 	LaptopOrder ReceiveOrder();
 	int SendLaptop(LaptopInfo info);
 	int ReturnRecord(Record record);
-	ReplicaRequest ReceiveReplicaRequest(ReplicaRequest replicaRequest);
+	ReplicaRequest ReceiveReplicaRequest();
 	int SendReplicaResponse(ReplicaResponse replicaResponse);
 };
 

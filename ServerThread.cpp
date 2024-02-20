@@ -1,5 +1,6 @@
 #include <iostream>
 #include <memory>
+#include <utility>
 
 #include "ServerThread.h"
 #include "ServerStub.h"
@@ -52,6 +53,23 @@ void LaptopFactory::
 
 	while (true)
 	{
+		if (is_backup_node) // role of back up node
+		{
+			ReplicaRequest replicaRequest = stub.ReceiveReplicaRequest();
+			if (replicaRequest.GetLastIndex() > last_index)
+			{
+				for (int i = last_index + 1; i <= replicaRequest.GetLastIndex(); i++)
+				{
+					MapOp op = smr_log[i];
+					customer_record[op.arg1] = op.arg2;
+				}
+				last_index = replicaRequest.GetLastIndex();
+			}
+			ReplicaResponse response;
+			response.SetStatus(true);
+			stub.SendReplicaResponse(response);
+			continue;
+		}
 		order = stub.ReceiveOrder();
 		if (!order.IsValid())
 		{
@@ -83,12 +101,10 @@ void LaptopFactory::
 			record.Print();
 			cr_lock.unlock();
 			break;
-		case 4:
-			std::cout << "Engineer " << engineer_id << " is exiting" << std::endl;
+		case -1:
+			std::cout << "Special order recieved setting back up node to true" << std::endl;
 			{
-
-				std::lock_guard<std::mutex> lg(cr_lock);
-				replicas.push_back({"Engineer", engineer_id});
+				is_backup_node = true;
 			}
 			break;
 		default:
@@ -117,10 +133,36 @@ void LaptopFactory::ExpertThread(int id)
 		ul.unlock();
 		smr_lock.lock();
 		smr_log.push_back({1, req->laptop.GetCustomerId(), req->laptop.GetEngineerId()});
+		if (replicas_connections_made == false)
+		{
+			MakeReplicaConnections();
+			replicas_connections_made = true;
+		}
+		ReplicaRequest request;
+		request.SetRequest(factory_id, smr_log.size() - 1, smr_log.size() - 1, {1, 1, 1});
+		for (auto &replica : replica_stubs)
+		{
+			replica.SendReplicaRequest(request);
+			ReplicaResponse response = replica.SendReplicaRequest(request);
+		}
 		smr_lock.unlock();
 		std::this_thread::sleep_for(std::chrono::microseconds(100));
 		req->laptop.SetExpertId(id);
 		req->prom.set_value(req->laptop);
+	}
+}
+
+void LaptopFactory::MakeReplicaConnections()
+{
+	if (replica_stubs.size() == 0)
+	{
+		for (auto &replica : replicas)
+		{
+			ClientStub stub;
+			stub.Init(replica.first, replica.second);
+			stub.OrderLaptop(LaptopOrder());
+			replica_stubs.emplace_back(stub);
+		}
 	}
 }
 
@@ -130,9 +172,6 @@ LaptopFactory::LaptopFactory()
 	committed_index = -1;
 	primary_id = -1;
 	factory_id = -1;
-	for (auto &replica : replicas)
-	{
-		ClientStub stub;
-		replica_stubs.emplace_back(stub.Init(replica.first, replica.second));
-	}
+	std::pair<std::string, int> replica = {"127.0.0.1", 12346};
+	replicas.push_back(replica);
 }

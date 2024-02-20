@@ -16,7 +16,7 @@ public:
 	int Init(std::string ip, int port);
 	LaptopInfo OrderLaptop(LaptopOrder order);
 	Record ReadRecord(LaptopOrder order);
-	ReplicaRequest SendReplicaRequest(ReplicaRequest replicaRequest);
+	ReplicaResponse SendReplicaRequest(ReplicaRequest replicaRequest);
 };
 
 #endif // end of #ifndef __CLIENT_STUB_H__

@@ -36,8 +36,9 @@ int ServerStub::ReturnRecord(Record record)
 	return socket->Send(buffer, record.Size(), 0);
 }
 
-ReplicaRequest ServerStub::ReceiveReplicaRequest(ReplicaRequest replicaRequest)
+ReplicaRequest ServerStub::ReceiveReplicaRequest()
 {
+	ReplicaRequest replicaRequest;
 	char buffer[32];
 	if (socket->Recv(buffer, replicaRequest.Size(), 0))
 	{

@@ -21,10 +21,10 @@ int main(int argc, char *argv[])
 	if (argc < 3)
 	{
 		std::cout << "not enough arguments" << std::endl;
-		std::cout << argv[0] << "[port #] [# experts]" << std::endl;
+		std::cout << argv[0] << " [port #] [# experts] " << std::endl;
 		// return 0;
-		port = 12345;
-		num_experts = 3;
+		port = 12347;
+		num_experts = 1;
 	}
 	else
 	{

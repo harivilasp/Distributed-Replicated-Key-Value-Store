@@ -158,7 +158,7 @@ void LaptopFactory::MakeReplicaConnections()
 	{
 		for (auto &replica : replicas)
 		{
-			ClientStub stub;
+			ServerClientStub stub;
 			stub.Init(replica.first, replica.second);
 			stub.OrderLaptop(LaptopOrder());
 			replica_stubs.emplace_back(stub);

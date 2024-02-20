@@ -11,7 +11,7 @@
 
 #include "Messages.h"
 #include "ServerSocket.h"
-#include "ClientStub.h"
+#include "ServerClientStub.h"
 
 struct ExpertRequest
 {
@@ -30,7 +30,7 @@ private:
 	std::mutex smr_lock;
 	std::mutex cr_lock;
 	std::vector<std::pair<std::string, int>> replicas;
-	std::vector<ClientStub> replica_stubs;
+	std::vector<ServerClientStub> replica_stubs;
 	bool is_backup_node = false;
 	bool replicas_connections_made = false;
 	int last_index;		 // the last index of the smr_log that has data

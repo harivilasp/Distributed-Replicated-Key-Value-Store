@@ -27,10 +27,10 @@ int main(int argc, char *argv[])
 		std::cout << "[# orders] [laptop type 0 or 1]" << std::endl;
 		// return 0;
 		ip = "127.0.0.1";
-		port = 12345;
-		num_customers = 2;
-		num_orders = 4;
-		laptop_type = 3;
+		port = 12347;
+		num_customers = 1;
+		num_orders = 1;
+		laptop_type = 1;
 	}
 	else
 	{

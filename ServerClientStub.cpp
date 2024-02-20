@@ -15,6 +15,9 @@ LaptopInfo ServerClientStub::OrderLaptop(LaptopOrder order)
 	int size;
 	order.Marshal(buffer);
 	size = order.Size();
+	std::cout << "ClientStub::OrderLaptop: order.Size() = " << size << std::endl;
+	order.Print();
+	std::cout << "ClientStub::OrderLaptop: order printed" << std::endl;
 	if (socket.Send(buffer, size, 0))
 	{
 		size = info.Size();
@@ -52,13 +55,18 @@ ReplicaResponse ServerClientStub::SendReplicaRequest(ReplicaRequest replicaReque
 	char buffer[32];
 	replicaRequest.Marshal(buffer);
 	int size = replicaRequest.Size();
+	std::cout << "ClientStub::SendReplicaRequest: replicaRequest.Size() = " << size << std::endl;
+	replicaRequest.Print();
+	std::cout << "ClientStub::SendReplicaRequest: replicaRequest printed" << std::endl;
 	ReplicaResponse response;
 	if (socket.Send(buffer, size, 0))
 	{
+		std::cout << "ClientStub::SendReplicaRequest: sent request" << std::endl;
 		size = response.Size();
 		if (socket.Recv(buffer, size, 0))
 		{
 			response.Unmarshal(buffer);
+			std::cout << "ClientStub::SendReplicaRequest: recived response" << std::endl;
 		}
 	}
 	return response;

@@ -42,6 +42,7 @@ LaptopInfo LaptopFactory::
 void LaptopFactory::
 	EngineerThread(std::unique_ptr<ServerSocket> socket, int id)
 {
+	std::cout << "EngineerThread: id = " << id << std::endl;
 	int engineer_id = id;
 	int laptop_type;
 	LaptopOrder order;
@@ -55,6 +56,7 @@ void LaptopFactory::
 	{
 		if (is_backup_node) // role of back up node
 		{
+			std::cout << "EngineerThread: is_backup_node = true" << std::endl;
 			ReplicaRequest replicaRequest = stub.ReceiveReplicaRequest();
 			if (replicaRequest.GetLastIndex() > last_index)
 			{
@@ -70,12 +72,14 @@ void LaptopFactory::
 			stub.SendReplicaResponse(response);
 			continue;
 		}
+		std::cout << "EngineerThread: before processing" << std::endl;
 		order = stub.ReceiveOrder();
 		if (!order.IsValid())
 		{
 			break;
 		}
 		laptop_type = order.GetLaptopType();
+		std::cout << "EngineerThread: processing laptop_type = " << laptop_type << std::endl;
 		switch (laptop_type)
 		{
 		case 0:
@@ -132,21 +136,28 @@ void LaptopFactory::ExpertThread(int id)
 
 		ul.unlock();
 		smr_lock.lock();
+		cr_lock.lock();
+		std::cout << "special engineer thread smr_lock locked" << std::endl;
 		smr_log.push_back({1, req->laptop.GetCustomerId(), req->laptop.GetEngineerId()});
+		customer_record[req->laptop.GetCustomerId()] = smr_log.size() - 1;
+		std::cout << "smr_log size: " << smr_log.size() << std::endl;
 		if (replicas_connections_made == false)
 		{
 			MakeReplicaConnections();
 			replicas_connections_made = true;
 		}
+		std::cout << "finished creating replicas" << std::endl;
 		ReplicaRequest request;
 		request.SetRequest(factory_id, smr_log.size() - 1, smr_log.size() - 1, {1, 1, 1});
 		for (auto &replica : replica_stubs)
 		{
-			replica.SendReplicaRequest(request);
+			std::cout << "sending replica request to replica" << std::endl;
 			ReplicaResponse response = replica.SendReplicaRequest(request);
+			std::cout << "recieved confirmation from replica " << response.GetStatus() << std::endl;
 		}
+		cr_lock.unlock();
 		smr_lock.unlock();
-		std::this_thread::sleep_for(std::chrono::microseconds(100));
+		// std::this_thread::sleep_for(std::chrono::microseconds(100));
 		req->laptop.SetExpertId(id);
 		req->prom.set_value(req->laptop);
 	}
@@ -154,13 +165,16 @@ void LaptopFactory::ExpertThread(int id)
 
 void LaptopFactory::MakeReplicaConnections()
 {
+	std::cout << "Making replica connections" << std::endl;
 	if (replica_stubs.size() == 0)
 	{
 		for (auto &replica : replicas)
 		{
 			ServerClientStub stub;
 			stub.Init(replica.first, replica.second);
+			std::cout << "Made connection to " << replica.first << ":" << replica.second << std::endl;
 			stub.OrderLaptop(LaptopOrder());
+			std::cout << "Registeration Order sent to replica" << std::endl;
 			replica_stubs.emplace_back(stub);
 		}
 	}

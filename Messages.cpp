@@ -233,7 +233,7 @@ int ReplicaRequest::GetFactoryId() { return factory_id; }
 int ReplicaRequest::GetCommittedIndex() { return committed_index; }
 int ReplicaRequest::GetLastIndex() { return last_index; }
 MapOp ReplicaRequest::GetMapOp() { return op; }
-int ReplicaRequest::Size() { return sizeof(factory_id) + sizeof(committed_index) + sizeof(last_index) + sizeof(op); }
+int ReplicaRequest::Size() { return sizeof(factory_id) + sizeof(committed_index) + sizeof(last_index) + 3 * sizeof(op.arg1); }
 void ReplicaRequest::Marshal(char *buffer)
 {
 

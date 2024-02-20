@@ -16,6 +16,8 @@ LaptopOrder ServerStub::ReceiveOrder()
 	{
 		order.Unmarshal(buffer);
 		std::cout << "ServerStub::ReceiveOrder: order.Size() = " << order.Size() << std::endl;
+		order.Print();
+		std::cout << "ServerStub::ReceiveOrder: order printed" << std::endl;
 	}
 	return order;
 }

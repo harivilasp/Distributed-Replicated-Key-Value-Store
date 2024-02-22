@@ -57,18 +57,38 @@ void LaptopFactory::
 		if (is_backup_node) // role of back up node
 		{
 			std::cout << "EngineerThread: is_backup_node = true" << std::endl;
+			std::cout << "EngineerThread: last_index = " << last_index << std::endl;
+			std::cout << "EngineerThread: committed_index = " << committed_index << std::endl;
+			std::cout << "EngineerThread: smr_log.size() = " << smr_log.size() << std::endl;
+			std::cout << "EngineerThread: customer_record.size() = " << customer_record.size() << std::endl;
+
 			ReplicaRequest replicaRequest = stub.ReceiveReplicaRequest();
-			if (replicaRequest.GetLastIndex() > last_index)
+			// request
+			std::cout << "EngineerThread: replicaRequest.GetFactoryId() = " << replicaRequest.GetFactoryId() << std::endl;
+			std::cout << "EngineerThread: replicaRequest.GetCommittedIndex() = " << replicaRequest.GetCommittedIndex() << std::endl;
+			std::cout << "EngineerThread: replicaRequest.GetLastIndex() = " << replicaRequest.GetLastIndex() << std::endl;
+			std::cout << "EngineerThread: replicaRequest.GetMapOp().arg1 = " << replicaRequest.GetMapOp().arg1 << std::endl;
+			std::cout << "EngineerThread: replicaRequest.GetMapOp().arg2 = " << replicaRequest.GetMapOp().arg2 << std::endl;
+			// process request
+
+			if (replicaRequest.GetCommittedIndex() > last_index)
 			{
-				for (int i = last_index + 1; i <= replicaRequest.GetLastIndex(); i++)
+				smr_log.push_back(replicaRequest.GetMapOp());
+				int primary_committed_index = replicaRequest.GetCommittedIndex();
+				for (int i = last_index + 1; i <= primary_committed_index; i++)
 				{
-					MapOp op = smr_log[i];
-					customer_record[op.arg1] = op.arg2;
+					// MapOp op = smr_log[i];
+					// customer_record[op.arg1] = op.arg2;
+					std::cout << "Applyging map op to customer record" << std::endl;
 				}
 				last_index = replicaRequest.GetLastIndex();
+				committed_index = primary_committed_index;
 			}
+			std::cout << "EngineerThread: last_index = " << last_index << std::endl;
+			std::cout << "EngineerThread: committed_index = " << committed_index << std::endl;
+
 			ReplicaResponse response;
-			response.SetStatus(true);
+			response.SetStatus(1);
 			stub.SendReplicaResponse(response);
 			continue;
 		}
@@ -105,10 +125,11 @@ void LaptopFactory::
 			record.Print();
 			cr_lock.unlock();
 			break;
-		case -1:
+		case 4:
 			std::cout << "Special order recieved setting back up node to true" << std::endl;
 			{
 				is_backup_node = true;
+				stub.SendLaptop(laptop);
 			}
 			break;
 		default:
@@ -152,7 +173,7 @@ void LaptopFactory::ExpertThread(int id)
 		for (auto &replica : replica_stubs)
 		{
 			std::cout << "sending replica request to replica" << std::endl;
-			ReplicaResponse response = replica.SendReplicaRequest(request);
+			ReplicaResponse response = replica->SendReplicaRequest(request);
 			std::cout << "recieved confirmation from replica " << response.GetStatus() << std::endl;
 		}
 		cr_lock.unlock();
@@ -170,12 +191,14 @@ void LaptopFactory::MakeReplicaConnections()
 	{
 		for (auto &replica : replicas)
 		{
-			ServerClientStub stub;
-			stub.Init(replica.first, replica.second);
+			std::unique_ptr<ServerClientStub> stub(new ServerClientStub());
+			stub->Init(replica.first, replica.second);
 			std::cout << "Made connection to " << replica.first << ":" << replica.second << std::endl;
-			stub.OrderLaptop(LaptopOrder());
-			std::cout << "Registeration Order sent to replica" << std::endl;
-			replica_stubs.emplace_back(stub);
+			LaptopOrder order;
+			order.SetOrder(0, 0, 4);
+			stub->OrderLaptop(order);
+			std::cout << "Registration Order sent to replica" << std::endl;
+			replica_stubs.emplace_back(std::move(stub)); // Move the unique_ptr into the vector
 		}
 	}
 }

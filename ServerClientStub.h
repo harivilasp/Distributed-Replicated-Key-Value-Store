@@ -13,6 +13,7 @@ private:
 
 public:
 	ServerClientStub();
+	virtual ~ServerClientStub();
 	int Init(std::string ip, int port);
 	LaptopInfo OrderLaptop(LaptopOrder order);
 	Record ReadRecord(LaptopOrder order);

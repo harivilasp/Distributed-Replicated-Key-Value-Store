@@ -12,6 +12,7 @@ LaptopOrder ServerStub::ReceiveOrder()
 {
 	char buffer[32];
 	LaptopOrder order;
+	std::cout << "ServerStub::ReceiveOrder: waiting for order" << std::endl;
 	if (socket->Recv(buffer, order.Size(), 0))
 	{
 		order.Unmarshal(buffer);
@@ -42,6 +43,7 @@ ReplicaRequest ServerStub::ReceiveReplicaRequest()
 {
 	ReplicaRequest replicaRequest;
 	char buffer[32];
+	std::cout << "ServerStub::ReceiveReplicaRequest: waiting for replicaRequest" << std::endl;
 	if (socket->Recv(buffer, replicaRequest.Size(), 0))
 	{
 		replicaRequest.Unmarshal(buffer);

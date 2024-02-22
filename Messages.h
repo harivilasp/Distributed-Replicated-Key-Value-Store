@@ -115,13 +115,6 @@ private:
 
 public:
 	ReplicaRequest();
-	void operator=(const ReplicaRequest &req)
-	{
-		factory_id = req.factory_id;
-		committed_index = req.committed_index;
-		last_index = req.last_index;
-		op = req.op;
-	}
 	void SetRequest(int fid, int cindex, int lindex, MapOp op);
 	int GetFactoryId();
 	int GetCommittedIndex();
@@ -136,11 +129,11 @@ public:
 class ReplicaResponse
 {
 private:
-	bool status;
+	int status;
 
 public:
 	ReplicaResponse();
-	void SetStatus(bool stat);
+	void SetStatus(int stat);
 	bool GetStatus();
 	int Size();
 	void Marshal(char *buffer);

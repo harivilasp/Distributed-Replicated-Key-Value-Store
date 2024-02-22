@@ -296,8 +296,8 @@ void ReplicaRequest::Print()
 	std::cout << "arg2 " << op.arg2 << std::endl;
 }
 
-ReplicaResponse::ReplicaResponse() { status = false; }
-void ReplicaResponse::SetStatus(bool stat) { status = stat; }
+ReplicaResponse::ReplicaResponse() { status = 0; }
+void ReplicaResponse::SetStatus(int stat) { status = stat; }
 bool ReplicaResponse::GetStatus() { return status; }
 int ReplicaResponse::Size() { return sizeof(status); }
 void ReplicaResponse::Marshal(char *buffer)

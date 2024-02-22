@@ -1,7 +1,7 @@
 #include "ServerClientStub.h"
 #include <iostream>
 
-ServerClientStub::ServerClientStub() {}
+ServerClientStub::ServerClientStub(){};
 
 int ServerClientStub::Init(std::string ip, int port)
 {
@@ -15,12 +15,14 @@ LaptopInfo ServerClientStub::OrderLaptop(LaptopOrder order)
 	int size;
 	order.Marshal(buffer);
 	size = order.Size();
-	std::cout << "ClientStub::OrderLaptop: order.Size() = " << size << std::endl;
+	std::cout << "ServerClientStub::OrderLaptop: order.Size() = " << size << std::endl;
 	order.Print();
-	std::cout << "ClientStub::OrderLaptop: order printed" << std::endl;
+	std::cout << "ServerClientStub::OrderLaptop: order printed" << std::endl;
 	if (socket.Send(buffer, size, 0))
 	{
+		std::cout << "ServerClientStub::OrderLaptop: sent order" << std::endl;
 		size = info.Size();
+		std::cout << "ServerClientStub::OrderLaptop: waiting for laptopinfo = " << std::endl;
 		if (socket.Recv(buffer, size, 0))
 		{
 			info.Unmarshal(buffer);
@@ -38,12 +40,13 @@ Record ServerClientStub::ReadRecord(LaptopOrder order)
 	size = order.Size();
 	if (socket.Send(buffer, size, 0))
 	{
-		std::cout << "ClientStub::ReadRecord: sent order" << std::endl;
+		std::cout << "ServerClientStub::ReadRecord: sent order" << std::endl;
 		// memset(buffer, 0, 32);
 		size = record.Size();
+		std::cout << "ServerClientStub::ReadRecord: waiting for record = " << std::endl;
 		if (socket.Recv(buffer, size, 0))
 		{
-			std::cout << "ClientStub::ReadRecord: received record" << std::endl;
+			std::cout << "ServerClientStub::ReadRecord: received record" << std::endl;
 			record.Unmarshal(buffer);
 		}
 	}
@@ -55,19 +58,25 @@ ReplicaResponse ServerClientStub::SendReplicaRequest(ReplicaRequest replicaReque
 	char buffer[32];
 	replicaRequest.Marshal(buffer);
 	int size = replicaRequest.Size();
-	std::cout << "ClientStub::SendReplicaRequest: replicaRequest.Size() = " << size << std::endl;
+	std::cout << "ServerClientStub::SendReplicaRequest: replicaRequest.Size() = " << size << std::endl;
 	replicaRequest.Print();
-	std::cout << "ClientStub::SendReplicaRequest: replicaRequest printed" << std::endl;
+	std::cout << "ServerClientStub::SendReplicaRequest: replicaRequest printed" << std::endl;
 	ReplicaResponse response;
 	if (socket.Send(buffer, size, 0))
 	{
-		std::cout << "ClientStub::SendReplicaRequest: sent request" << std::endl;
+		std::cout << "ServerClientStub::SendReplicaRequest: sent request" << std::endl;
 		size = response.Size();
+		std::cout << "ServerClientStub::SendReplicaRequest: waiting for response = " << std::endl;
 		if (socket.Recv(buffer, size, 0))
 		{
 			response.Unmarshal(buffer);
-			std::cout << "ClientStub::SendReplicaRequest: recived response" << std::endl;
+			std::cout << "ServerClientStub::SendReplicaRequest: recived response" << std::endl;
 		}
 	}
 	return response;
+}
+
+ServerClientStub::~ServerClientStub()
+{
+	std::cout << "ServerClientStub::~ServerClientStub: deleting stub" << std::endl;
 }

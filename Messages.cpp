@@ -296,6 +296,11 @@ void ReplicaRequest::Print()
 	std::cout << "arg2 " << op.arg2 << std::endl;
 }
 
+bool ReplicaRequest::IsValid()
+{
+	return (last_index != -1);
+}
+
 ReplicaResponse::ReplicaResponse() { status = 0; }
 void ReplicaResponse::SetStatus(int stat) { status = stat; }
 bool ReplicaResponse::GetStatus() { return status; }

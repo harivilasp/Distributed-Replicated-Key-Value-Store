@@ -42,6 +42,7 @@ LaptopInfo LaptopFactory::
 void LaptopFactory::
 	EngineerThread(std::unique_ptr<ServerSocket> socket, int id)
 {
+	bool is_backup_node = false;
 	std::cout << "EngineerThread: id = " << id << std::endl;
 	int engineer_id = id;
 	int laptop_type;
@@ -63,6 +64,12 @@ void LaptopFactory::
 			std::cout << "EngineerThread: customer_record.size() = " << customer_record.size() << std::endl;
 
 			ReplicaRequest replicaRequest = stub.ReceiveReplicaRequest();
+			if (!replicaRequest.IsValid())
+			{
+				std::cout << "Connection broken back up node" << std::endl;
+				is_backup_node = false;
+				continue;
+			}
 			// request
 			std::cout << "EngineerThread: replicaRequest.GetFactoryId() = " << replicaRequest.GetFactoryId() << std::endl;
 			std::cout << "EngineerThread: replicaRequest.GetCommittedIndex() = " << replicaRequest.GetCommittedIndex() << std::endl;
@@ -96,6 +103,7 @@ void LaptopFactory::
 		order = stub.ReceiveOrder();
 		if (!order.IsValid())
 		{
+			std::cout << "Connection broken engineer" << std::endl;
 			break;
 		}
 		laptop_type = order.GetLaptopType();

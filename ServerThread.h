@@ -31,7 +31,7 @@ private:
 	std::mutex cr_lock;
 	std::vector<std::pair<std::string, int>> replicas;
 	std::vector<std::unique_ptr<ServerClientStub>> replica_stubs;
-	bool is_backup_node = false;
+
 	bool replicas_connections_made = false;
 	int last_index;		 // the last index of the smr_log that has data
 	int committed_index; // the last index of the smr_log where the

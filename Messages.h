@@ -124,6 +124,7 @@ public:
 	void Marshal(char *buffer);
 	void Unmarshal(char *buffer);
 	void Print();
+	bool IsValid();
 };
 
 class ReplicaResponse

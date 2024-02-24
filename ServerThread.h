@@ -42,8 +42,8 @@ private:
 	int factory_id;		 // the id of the factory . This is assigned via
 						 // the command line arguments .
 
-	LaptopInfo CreateRegularLaptop(LaptopOrder order, int engineer_id);
-	LaptopInfo CreateCustomLaptop(LaptopOrder order, int engineer_id);
+	LaptopInfo CreateRegularLaptop(CustomerRequest order, int engineer_id);
+	LaptopInfo CreateCustomLaptop(CustomerRequest order, int engineer_id);
 
 public:
 	void EngineerThread(std::unique_ptr<ServerSocket> socket, int id);

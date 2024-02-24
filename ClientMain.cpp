@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
 	int port;
 	int num_customers;
 	int num_orders;
-	int laptop_type;
+	int request_type;
 	ClientTimer timer;
 
 	std::vector<std::shared_ptr<ClientThreadClass>> client_vector;
@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 		port = 12347;
 		num_customers = 1;
 		num_orders = 1;
-		laptop_type = 1;
+		request_type = 1;
 	}
 	else
 	{
@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
 		port = atoi(argv[2]);
 		num_customers = atoi(argv[3]);
 		num_orders = atoi(argv[4]);
-		laptop_type = atoi(argv[5]);
+		request_type = atoi(argv[5]);
 	}
 
 	timer.Start();
@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 	{
 		auto client_cls = std::shared_ptr<ClientThreadClass>(new ClientThreadClass());
 		std::thread client_thread(&ClientThreadClass::ThreadBody, client_cls,
-								  ip, port, i, num_orders, laptop_type);
+								  ip, port, i, num_orders, request_type);
 
 		client_vector.push_back(std::move(client_cls));
 		thread_vector.push_back(std::move(client_thread));

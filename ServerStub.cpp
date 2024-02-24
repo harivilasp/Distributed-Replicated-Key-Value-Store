@@ -8,10 +8,10 @@ void ServerStub::Init(std::unique_ptr<ServerSocket> socket)
 	this->socket = std::move(socket);
 }
 
-LaptopOrder ServerStub::ReceiveOrder()
+CustomerRequest ServerStub::ReceiveOrder()
 {
 	char buffer[32];
-	LaptopOrder order;
+	CustomerRequest order;
 	std::cout << "ServerStub::ReceiveOrder: waiting for order" << std::endl;
 	if (socket->Recv(buffer, order.Size(), 0))
 	{

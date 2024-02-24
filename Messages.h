@@ -3,20 +3,20 @@
 
 #include <string>
 
-class LaptopOrder
+class CustomerRequest
 {
 private:
 	int customer_id;
 	int order_number;
-	int laptop_type;
+	int request_type;
 
 public:
-	LaptopOrder();
-	void operator=(const LaptopOrder &order)
+	CustomerRequest();
+	void operator=(const CustomerRequest &order)
 	{
 		customer_id = order.customer_id;
 		order_number = order.order_number;
-		laptop_type = order.laptop_type;
+		request_type = order.request_type;
 	}
 	void SetOrder(int cid, int order_num, int type);
 	int GetCustomerId();
@@ -38,7 +38,7 @@ class LaptopInfo
 private:
 	int customer_id;
 	int order_number;
-	int laptop_type;
+	int request_type;
 	int engineer_id;
 	int expert_id;
 
@@ -48,12 +48,12 @@ public:
 	{
 		customer_id = info.customer_id;
 		order_number = info.order_number;
-		laptop_type = info.laptop_type;
+		request_type = info.request_type;
 		engineer_id = info.engineer_id;
 		expert_id = info.expert_id;
 	}
 	void SetInfo(int cid, int order_num, int type, int engid, int expid);
-	void CopyOrder(LaptopOrder order);
+	void CopyOrder(CustomerRequest order);
 	void SetEngineerId(int id);
 	void SetExpertId(int id);
 

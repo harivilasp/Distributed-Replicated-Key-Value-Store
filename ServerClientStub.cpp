@@ -8,7 +8,7 @@ int ServerClientStub::Init(std::string ip, int port)
 	return socket.Init(ip, port);
 }
 
-LaptopInfo ServerClientStub::OrderLaptop(LaptopOrder order)
+LaptopInfo ServerClientStub::OrderLaptop(CustomerRequest order)
 {
 	LaptopInfo info;
 	char buffer[32];
@@ -31,7 +31,7 @@ LaptopInfo ServerClientStub::OrderLaptop(LaptopOrder order)
 	return info;
 }
 
-Record ServerClientStub::ReadRecord(LaptopOrder order)
+Record ServerClientStub::ReadRecord(CustomerRequest order)
 {
 	Record record;
 	char buffer[32];

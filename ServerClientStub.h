@@ -15,8 +15,8 @@ public:
 	ServerClientStub();
 	virtual ~ServerClientStub();
 	int Init(std::string ip, int port);
-	LaptopInfo OrderLaptop(LaptopOrder order);
-	Record ReadRecord(LaptopOrder order);
+	LaptopInfo OrderLaptop(CustomerRequest order);
+	Record ReadRecord(CustomerRequest order);
 	ReplicaResponse SendReplicaRequest(ReplicaRequest replicaRequest);
 };
 

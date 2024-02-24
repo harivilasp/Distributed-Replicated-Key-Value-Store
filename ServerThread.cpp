@@ -6,7 +6,7 @@
 #include "ServerStub.h"
 
 LaptopInfo LaptopFactory::
-	CreateRegularLaptop(LaptopOrder order, int engineer_id)
+	CreateRegularLaptop(CustomerRequest order, int engineer_id)
 {
 	LaptopInfo laptop;
 	laptop.CopyOrder(order);
@@ -16,7 +16,7 @@ LaptopInfo LaptopFactory::
 }
 
 LaptopInfo LaptopFactory::
-	CreateCustomLaptop(LaptopOrder order, int engineer_id)
+	CreateCustomLaptop(CustomerRequest order, int engineer_id)
 {
 	LaptopInfo laptop;
 	laptop.CopyOrder(order);
@@ -45,8 +45,8 @@ void LaptopFactory::
 	bool is_backup_node = false;
 	std::cout << "EngineerThread: id = " << id << std::endl;
 	int engineer_id = id;
-	int laptop_type;
-	LaptopOrder order;
+	int request_type;
+	CustomerRequest order;
 	LaptopInfo laptop;
 
 	ServerStub stub;
@@ -106,9 +106,9 @@ void LaptopFactory::
 			std::cout << "Connection broken engineer" << std::endl;
 			break;
 		}
-		laptop_type = order.GetLaptopType();
-		std::cout << "EngineerThread: processing laptop_type = " << laptop_type << std::endl;
-		switch (laptop_type)
+		request_type = order.GetLaptopType();
+		std::cout << "EngineerThread: processing request_type = " << request_type << std::endl;
+		switch (request_type)
 		{
 		case 0:
 			laptop = CreateRegularLaptop(order, engineer_id);
@@ -142,7 +142,7 @@ void LaptopFactory::
 			break;
 		default:
 			std::cout << "Undefined laptop type: "
-					  << laptop_type << std::endl;
+					  << request_type << std::endl;
 		}
 	}
 }
@@ -168,8 +168,8 @@ void LaptopFactory::ExpertThread(int id)
 		cr_lock.lock();
 		std::cout << "special engineer thread smr_lock locked" << std::endl;
 		smr_log.push_back({1, req->laptop.GetCustomerId(), req->laptop.GetEngineerId()});
-		customer_record[req->laptop.GetCustomerId()] = smr_log.size() - 1;
 		std::cout << "smr_log size: " << smr_log.size() << std::endl;
+		last_index = smr_log.size() - 1;
 		if (replicas_connections_made == false)
 		{
 			MakeReplicaConnections();
@@ -177,13 +177,16 @@ void LaptopFactory::ExpertThread(int id)
 		}
 		std::cout << "finished creating replicas" << std::endl;
 		ReplicaRequest request;
-		request.SetRequest(factory_id, smr_log.size() - 1, smr_log.size() - 1, {1, 1, 1});
+		request.SetRequest(factory_id, committed_index, last_index, {1, req->laptop.GetCustomerId(), last_index});
 		for (auto &replica : replica_stubs)
 		{
 			std::cout << "sending replica request to replica" << std::endl;
 			ReplicaResponse response = replica->SendReplicaRequest(request);
 			std::cout << "recieved confirmation from replica " << response.GetStatus() << std::endl;
 		}
+		customer_record[req->laptop.GetCustomerId()] = smr_log.size() - 1;
+
+		committed_index = smr_log.size() - 1;
 		cr_lock.unlock();
 		smr_lock.unlock();
 		// std::this_thread::sleep_for(std::chrono::microseconds(100));
@@ -202,7 +205,7 @@ void LaptopFactory::MakeReplicaConnections()
 			std::unique_ptr<ServerClientStub> stub(new ServerClientStub());
 			stub->Init(replica.first, replica.second);
 			std::cout << "Made connection to " << replica.first << ":" << replica.second << std::endl;
-			LaptopOrder order;
+			CustomerRequest order;
 			order.SetOrder(0, 0, 4);
 			stub->OrderLaptop(order);
 			std::cout << "Registration Order sent to replica" << std::endl;

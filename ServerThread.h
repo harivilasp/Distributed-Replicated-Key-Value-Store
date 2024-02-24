@@ -50,6 +50,7 @@ public:
 	void ExpertThread(int id);
 	LaptopFactory();
 	void MakeReplicaConnections();
+	void SetFactoryId(int id);
 };
 
 #endif // end of #ifndef __SERVERTHREAD_H__

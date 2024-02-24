@@ -81,14 +81,18 @@ void LaptopFactory::
 			if (replicaRequest.GetCommittedIndex() > last_index)
 			{
 				smr_log.push_back(replicaRequest.GetMapOp());
-				int primary_committed_index = replicaRequest.GetCommittedIndex();
-				for (int i = last_index + 1; i <= primary_committed_index; i++)
-				{
-					// MapOp op = smr_log[i];
-					// customer_record[op.arg1] = op.arg2;
-					std::cout << "Applyging map op to customer record" << std::endl;
-				}
 				last_index = replicaRequest.GetLastIndex();
+				int primary_committed_index = replicaRequest.GetCommittedIndex();
+
+				MapOp op = smr_log[primary_committed_index];
+				customer_record[op.arg1] = op.arg2;
+				// for (int i = last_index + 1; i <= primary_committed_index; i++)
+				// {
+				// 	// MapOp op = smr_log[i];
+				// 	// customer_record[op.arg1] = op.arg2;
+				std::cout << "Applied map op to customer record" << std::endl;
+				// }
+				// last_index = replicaRequest.GetLastIndex();
 				committed_index = primary_committed_index;
 			}
 			std::cout << "EngineerThread: last_index = " << last_index << std::endl;
@@ -182,9 +186,9 @@ void LaptopFactory::ExpertThread(int id)
 		smr_lock.lock();
 		cr_lock.lock();
 		std::cout << "special engineer thread smr_lock locked" << std::endl;
-		smr_log.push_back({1, req->laptop.GetCustomerId(), req->laptop.GetEngineerId()});
+		smr_log.push_back({1, req->laptop.GetCustomerId(), last_index + 1});
 		std::cout << "smr_log size: " << smr_log.size() << std::endl;
-		last_index = smr_log.size() - 1;
+		last_index += 1;
 		if (replicas_connections_made == false)
 		{
 			MakeReplicaConnections();
@@ -237,4 +241,9 @@ LaptopFactory::LaptopFactory()
 	factory_id = -1;
 	std::pair<std::string, int> replica = {"127.0.0.1", 12346};
 	replicas.push_back(replica);
+}
+
+void LaptopFactory::SetFactoryId(int id)
+{
+	factory_id = id;
 }

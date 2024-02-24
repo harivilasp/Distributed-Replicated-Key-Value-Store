@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 {
 	std::string ip;
 	int port;
-	int num_customers;
+	int customer_id;
 	int num_orders;
 	int request_type;
 	ClientTimer timer;
@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
 		// return 0;
 		ip = "127.0.0.1";
 		port = 12347;
-		num_customers = 1;
+		customer_id = 1;
 		num_orders = 1;
 		request_type = 1;
 	}
@@ -36,21 +36,27 @@ int main(int argc, char *argv[])
 	{
 		ip = argv[1];
 		port = atoi(argv[2]);
-		num_customers = atoi(argv[3]);
+		customer_id = atoi(argv[3]);
 		num_orders = atoi(argv[4]);
 		request_type = atoi(argv[5]);
 	}
 
 	timer.Start();
-	for (int i = 0; i < num_customers; i++)
-	{
-		auto client_cls = std::shared_ptr<ClientThreadClass>(new ClientThreadClass());
-		std::thread client_thread(&ClientThreadClass::ThreadBody, client_cls,
-								  ip, port, i, num_orders, request_type);
+	// for (int i = 0; i < customer_id; i++)
+	// {
+	// 	auto client_cls = std::shared_ptr<ClientThreadClass>(new ClientThreadClass());
+	// 	std::thread client_thread(&ClientThreadClass::ThreadBody, client_cls,
+	// 							  ip, port, i, num_orders, request_type);
 
-		client_vector.push_back(std::move(client_cls));
-		thread_vector.push_back(std::move(client_thread));
-	}
+	// 	client_vector.push_back(std::move(client_cls));
+	// 	thread_vector.push_back(std::move(client_thread));
+	// }
+	auto client_cls = std::shared_ptr<ClientThreadClass>(new ClientThreadClass());
+	std::thread client_thread(&ClientThreadClass::ThreadBody, client_cls,
+							  ip, port, customer_id, num_orders, request_type);
+
+	client_vector.push_back(std::move(client_cls));
+	thread_vector.push_back(std::move(client_thread));
 	for (auto &th : thread_vector)
 	{
 		th.join();

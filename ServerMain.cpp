@@ -12,7 +12,8 @@ int main(int argc, char *argv[])
 {
 	int port;
 	int engineer_cnt = 0;
-	int num_experts;
+	int num_experts = 1;
+	int id_factory;
 	ServerSocket socket;
 	LaptopFactory factory;
 	std::unique_ptr<ServerSocket> new_socket;
@@ -25,12 +26,14 @@ int main(int argc, char *argv[])
 		// return 0;
 		port = 12347;
 		num_experts = 1;
+		id_factory = 111;
 	}
 	else
 	{
 		port = atoi(argv[1]);
-		num_experts = atoi(argv[2]);
+		id_factory = atoi(argv[2]);
 	}
+	factory.SetFactoryId(id_factory);
 
 	for (int i = 0; i < num_experts; i++)
 	{

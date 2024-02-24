@@ -29,6 +29,16 @@ void ClientThreadClass::
 		}
 		return;
 	}
+	if (request_type == 2) // read for one customer id
+	{
+		CustomerRequest customerRequest;
+		CustomerRecord customerRecord;
+		customerRequest.SetCustomerRequest(customer_id, 0, request_type);
+		customerRecord = stub.ReadRecord(customerRequest);
+		std::cout << "Thread " << customer_id << " customerRecord " << 0 << std::endl;
+		customerRecord.Print();
+		return;
+	}
 
 	for (int i = 0; i < num_orders; i++)
 	{

@@ -51,6 +51,9 @@ public:
 	LaptopFactory();
 	void MakeReplicaConnections();
 	void SetFactoryId(int id);
+	void AddReplica(std::string ip, int port);
+	void SetPrimaryId(int id);
+	void GetPrimaryId();
 };
 
 #endif // end of #ifndef __SERVERTHREAD_H__

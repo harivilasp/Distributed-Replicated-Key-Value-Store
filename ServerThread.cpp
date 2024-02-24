@@ -68,6 +68,7 @@ void LaptopFactory::
 			{
 				std::cout << "Connection broken back up node" << std::endl;
 				is_backup_node = false;
+				primary_id = -1;
 				continue;
 			}
 			// request
@@ -160,6 +161,7 @@ void LaptopFactory::
 			std::cout << "Special customerRequest recieved setting back up node to true" << std::endl;
 			{
 				is_backup_node = true;
+				primary_id = customerRequest.GetCustomerId();
 				stub.SendLaptop(laptop);
 			}
 			break;
@@ -193,8 +195,9 @@ void LaptopFactory::ExpertThread(int id)
 		smr_log.push_back({1, req->laptop.GetCustomerId(), last_index + 1});
 		std::cout << "smr_log size: " << smr_log.size() << std::endl;
 		last_index += 1;
-		if (replicas_connections_made == false)
+		if (primary_id == -1)
 		{
+			primary_id = factory_id;
 			MakeReplicaConnections();
 			replicas_connections_made = true;
 		}
@@ -221,20 +224,25 @@ void LaptopFactory::ExpertThread(int id)
 void LaptopFactory::MakeReplicaConnections()
 {
 	std::cout << "Making replica connections" << std::endl;
-	if (replica_stubs.size() == 0)
+	// if (replica_stubs.size() == 0)
+	// {
+	replica_stubs.clear();
+	for (auto &replica : replicas)
 	{
-		for (auto &replica : replicas)
+		std::unique_ptr<ServerClientStub> stub(new ServerClientStub());
+		if (stub->Init(replica.first, replica.second) == 0)
 		{
-			std::unique_ptr<ServerClientStub> stub(new ServerClientStub());
-			stub->Init(replica.first, replica.second);
-			std::cout << "Made connection to " << replica.first << ":" << replica.second << std::endl;
-			CustomerRequest customerRequest;
-			customerRequest.SetCustomerRequest(0, 0, 4);
-			stub->OrderLaptop(customerRequest);
-			std::cout << "Registration Order sent to replica" << std::endl;
-			replica_stubs.emplace_back(std::move(stub)); // Move the unique_ptr into the vector
+			std::cout << "Failed to connect to " << replica.first << ":" << replica.second << std::endl;
+			continue;
 		}
+		std::cout << "Made connection to " << replica.first << ":" << replica.second << std::endl;
+		CustomerRequest customerRequest;
+		customerRequest.SetCustomerRequest(factory_id, 0, 4);
+		stub->OrderLaptop(customerRequest);
+		std::cout << "Registration Order sent to replica" << std::endl;
+		replica_stubs.emplace_back(std::move(stub)); // Move the unique_ptr into the vector
 	}
+	// }
 }
 
 LaptopFactory::LaptopFactory()
@@ -243,11 +251,17 @@ LaptopFactory::LaptopFactory()
 	committed_index = -1;
 	primary_id = -1;
 	factory_id = -1;
-	std::pair<std::string, int> replica = {"127.0.0.1", 12346};
-	replicas.push_back(replica);
+	// std::pair<std::string, int> replica = {"127.0.0.1", 12346};
+	// replicas.push_back(replica);
 }
 
 void LaptopFactory::SetFactoryId(int id)
 {
 	factory_id = id;
+}
+
+void LaptopFactory::AddReplica(std::string ip, int port)
+{
+	std::pair<std::string, int> replica = {ip, port};
+	replicas.push_back(replica);
 }

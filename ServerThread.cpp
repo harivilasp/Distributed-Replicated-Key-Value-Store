@@ -6,20 +6,20 @@
 #include "ServerStub.h"
 
 LaptopInfo LaptopFactory::
-	CreateRegularLaptop(CustomerRequest order, int engineer_id)
+	CreateRegularLaptop(CustomerRequest customerRequest, int engineer_id)
 {
 	LaptopInfo laptop;
-	laptop.CopyOrder(order);
+	laptop.CopyOrder(customerRequest);
 	laptop.SetEngineerId(engineer_id);
 	laptop.SetExpertId(-1);
 	return laptop;
 }
 
 LaptopInfo LaptopFactory::
-	CreateCustomLaptop(CustomerRequest order, int engineer_id)
+	CreateCustomLaptop(CustomerRequest customerRequest, int engineer_id)
 {
 	LaptopInfo laptop;
-	laptop.CopyOrder(order);
+	laptop.CopyOrder(customerRequest);
 	laptop.SetEngineerId(engineer_id);
 
 	std::promise<LaptopInfo> prom;
@@ -46,7 +46,7 @@ void LaptopFactory::
 	std::cout << "EngineerThread: id = " << id << std::endl;
 	int engineer_id = id;
 	int request_type;
-	CustomerRequest order;
+	CustomerRequest customerRequest;
 	LaptopInfo laptop;
 
 	ServerStub stub;
@@ -100,41 +100,56 @@ void LaptopFactory::
 			continue;
 		}
 		std::cout << "EngineerThread: before processing" << std::endl;
-		order = stub.ReceiveOrder();
-		if (!order.IsValid())
+		customerRequest = stub.ReceiveOrder();
+		if (!customerRequest.IsValid())
 		{
 			std::cout << "Connection broken engineer" << std::endl;
 			break;
 		}
-		request_type = order.GetLaptopType();
+		request_type = customerRequest.GetLaptopType();
 		std::cout << "EngineerThread: processing request_type = " << request_type << std::endl;
 		switch (request_type)
 		{
 		case 0:
-			laptop = CreateRegularLaptop(order, engineer_id);
+			laptop = CreateRegularLaptop(customerRequest, engineer_id);
 			stub.SendLaptop(laptop);
 			break;
 		case 1:
-			laptop = CreateCustomLaptop(order, engineer_id);
+			laptop = CreateCustomLaptop(customerRequest, engineer_id);
 			stub.SendLaptop(laptop);
 			break;
-		case 3:
+		case 2: // read for one customer id
 			cr_lock.lock();
-			if (customer_record.find(order.GetCustomerId()) != customer_record.end())
+			if (customer_record.find(customerRequest.GetCustomerId()) != customer_record.end())
 			{
-				int last_ind = customer_record[order.GetCustomerId()];
-				record.SetRecord(order.GetOrderNumber(), last_ind);
+				int last_ind = customer_record[customerRequest.GetCustomerId()];
+				record.SetRecord(customerRequest.GetCustomerId(), last_ind);
 			}
 			else
 			{
-				record.SetRecord(order.GetOrderNumber(), -1);
+				record.SetRecord(customerRequest.GetCustomerId(), -1);
+			}
+			stub.ReturnRecord(record);
+			record.Print();
+			cr_lock.unlock();
+			break;
+		case 3: // read for all customer ids'
+			cr_lock.lock();
+			if (customer_record.find(customerRequest.GetCustomerId()) != customer_record.end())
+			{
+				int last_ind = customer_record[customerRequest.GetCustomerId()];
+				record.SetRecord(customerRequest.GetCustomerId(), last_ind);
+			}
+			else
+			{
+				record.SetRecord(customerRequest.GetCustomerId(), -1);
 			}
 			stub.ReturnRecord(record);
 			record.Print();
 			cr_lock.unlock();
 			break;
 		case 4:
-			std::cout << "Special order recieved setting back up node to true" << std::endl;
+			std::cout << "Special customerRequest recieved setting back up node to true" << std::endl;
 			{
 				is_backup_node = true;
 				stub.SendLaptop(laptop);
@@ -205,9 +220,9 @@ void LaptopFactory::MakeReplicaConnections()
 			std::unique_ptr<ServerClientStub> stub(new ServerClientStub());
 			stub->Init(replica.first, replica.second);
 			std::cout << "Made connection to " << replica.first << ":" << replica.second << std::endl;
-			CustomerRequest order;
-			order.SetCustomerRequest(0, 0, 4);
-			stub->OrderLaptop(order);
+			CustomerRequest customerRequest;
+			customerRequest.SetCustomerRequest(0, 0, 4);
+			stub->OrderLaptop(customerRequest);
 			std::cout << "Registration Order sent to replica" << std::endl;
 			replica_stubs.emplace_back(std::move(stub)); // Move the unique_ptr into the vector
 		}

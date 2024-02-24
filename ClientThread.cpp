@@ -22,9 +22,9 @@ void ClientThreadClass::
 		{
 			CustomerRequest customerRequest;
 			CustomerRecord customerRecord;
-			customerRequest.SetCustomerRequest(customer_id, i, request_type);
+			customerRequest.SetCustomerRequest(i, i, request_type);
 			customerRecord = stub.ReadRecord(customerRequest);
-			std::cout << "Thread " << customer_id << " customerRecord " << i << std::endl;
+			std::cout << "Thread " << i << " customerRecord" << std::endl;
 			customerRecord.Print();
 		}
 		return;

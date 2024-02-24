@@ -78,22 +78,26 @@ void LaptopFactory::
 			std::cout << "EngineerThread: replicaRequest.GetMapOp().arg2 = " << replicaRequest.GetMapOp().arg2 << std::endl;
 			// process request
 
-			if (replicaRequest.GetCommittedIndex() > last_index)
+			if (replicaRequest.GetLastIndex() > committed_index)
 			{
+				cr_lock.lock();
+				smr_lock.lock();
 				smr_log.push_back(replicaRequest.GetMapOp());
-				last_index = replicaRequest.GetLastIndex();
+				// primary_last_index = replicaRequest.GetLastIndex();
 				int primary_committed_index = replicaRequest.GetCommittedIndex();
-
-				MapOp op = smr_log[primary_committed_index];
-				customer_record[op.arg1] = op.arg2;
-				// for (int i = last_index + 1; i <= primary_committed_index; i++)
-				// {
-				// 	// MapOp op = smr_log[i];
-				// 	// customer_record[op.arg1] = op.arg2;
-				std::cout << "Applied map op to customer record" << std::endl;
-				// }
-				// last_index = replicaRequest.GetLastIndex();
+				for (int i = committed_index + 1; i <= primary_committed_index; i++)
+				{
+					MapOp op = smr_log[i];
+					customer_record[op.arg1] = op.arg2;
+					std::cout << "Applied map op to customer record"
+							  << "op.arg1 " << op.arg1 << "op.arg2 " << op.arg2 << std::endl;
+					std::cout << "EngineerThread: customer_record = " << customer_record[op.arg1] << std::endl;
+					// std::cout << ""
+				}
+				last_index = replicaRequest.GetLastIndex();
 				committed_index = primary_committed_index;
+				cr_lock.unlock();
+				smr_lock.unlock();
 			}
 			std::cout << "EngineerThread: last_index = " << last_index << std::endl;
 			std::cout << "EngineerThread: committed_index = " << committed_index << std::endl;

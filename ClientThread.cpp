@@ -21,7 +21,7 @@ void ClientThreadClass::
 		for (int i = 0; i < 3; i++)
 		{
 			CustomerRequest order;
-			Record record;
+			CustomerRecord record;
 			order.SetCustomerRequest(customer_id, i, request_type);
 			record = stub.ReadRecord(order);
 			std::cout << "Thread " << customer_id << " record " << i << std::endl;

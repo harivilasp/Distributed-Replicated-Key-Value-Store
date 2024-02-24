@@ -31,9 +31,9 @@ LaptopInfo ServerClientStub::OrderLaptop(CustomerRequest order)
 	return info;
 }
 
-Record ServerClientStub::ReadRecord(CustomerRequest order)
+CustomerRecord ServerClientStub::ReadRecord(CustomerRequest order)
 {
-	Record record;
+	CustomerRecord record;
 	char buffer[32];
 	int size;
 	order.Marshal(buffer);

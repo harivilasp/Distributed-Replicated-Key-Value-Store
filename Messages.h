@@ -73,15 +73,15 @@ public:
 	void Print();
 };
 
-class Record
+class CustomerRecord
 {
 private:
 	int customer_id;
 	int last_order;
 
 public:
-	Record();
-	void operator=(const Record &rec)
+	CustomerRecord();
+	void operator=(const CustomerRecord &rec)
 	{
 		customer_id = rec.customer_id;
 		last_order = rec.last_order;

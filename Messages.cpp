@@ -167,23 +167,23 @@ void LaptopInfo::Print()
 	std::cout << "expid " << admin_id << std::endl;
 }
 
-Record::Record()
+CustomerRecord::CustomerRecord()
 {
 	customer_id = -1;
 	last_order = -1;
 }
 
-void Record::SetRecord(int cid, int last_order_id)
+void CustomerRecord::SetRecord(int cid, int last_order_id)
 {
 	customer_id = cid;
 	last_order = last_order_id;
 }
-int Record::GetCustomerId() { return customer_id; }
-int Record::GetLastOrder() { return last_order; }
+int CustomerRecord::GetCustomerId() { return customer_id; }
+int CustomerRecord::GetLastOrder() { return last_order; }
 
-int Record::Size() { return sizeof(customer_id) + sizeof(last_order); }
+int CustomerRecord::Size() { return sizeof(customer_id) + sizeof(last_order); }
 
-void Record::Marshal(char *buffer)
+void CustomerRecord::Marshal(char *buffer)
 {
 	int net_customer_id = htonl(customer_id);
 	int net_last_order = htonl(last_order);
@@ -193,7 +193,7 @@ void Record::Marshal(char *buffer)
 	offset += sizeof(net_customer_id);
 	memcpy(buffer + offset, &net_last_order, sizeof(net_last_order));
 }
-void Record::Unmarshal(char *buffer)
+void CustomerRecord::Unmarshal(char *buffer)
 {
 	int net_customer_id;
 	int net_last_order;
@@ -207,7 +207,7 @@ void Record::Unmarshal(char *buffer)
 	last_order = ntohl(net_last_order);
 }
 
-void Record::Print()
+void CustomerRecord::Print()
 {
 	std::cout << "id " << customer_id << " ";
 	std::cout << "last " << last_order << std::endl;

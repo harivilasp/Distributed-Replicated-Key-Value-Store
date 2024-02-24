@@ -16,7 +16,7 @@ public:
 	void Init(std::unique_ptr<ServerSocket> socket);
 	CustomerRequest ReceiveOrder();
 	int SendLaptop(LaptopInfo info);
-	int ReturnRecord(Record record);
+	int ReturnRecord(CustomerRecord record);
 	ReplicaRequest ReceiveReplicaRequest();
 	int SendReplicaResponse(ReplicaResponse replicaResponse);
 };

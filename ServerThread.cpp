@@ -50,7 +50,7 @@ void LaptopFactory::
 	LaptopInfo laptop;
 
 	ServerStub stub;
-	Record record;
+	CustomerRecord record;
 	stub.Init(std::move(socket));
 
 	while (true)

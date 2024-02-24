@@ -15,7 +15,7 @@ public:
 	ClientStub();
 	int Init(std::string ip, int port);
 	LaptopInfo OrderLaptop(CustomerRequest order);
-	Record ReadRecord(CustomerRequest order);
+	CustomerRecord ReadRecord(CustomerRequest order);
 	ReplicaResponse SendReplicaRequest(ReplicaRequest replicaRequest);
 };
 

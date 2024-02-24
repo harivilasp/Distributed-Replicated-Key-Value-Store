@@ -11,7 +11,7 @@ CustomerRequest::CustomerRequest()
 	request_type = -1;
 }
 
-void CustomerRequest::SetOrder(int id, int number, int type)
+void CustomerRequest::SetCustomerRequest(int id, int number, int type)
 {
 	customer_id = id;
 	order_number = number;
@@ -75,7 +75,7 @@ LaptopInfo::LaptopInfo()
 	order_number = -1;
 	request_type = -1;
 	engineer_id = -1;
-	expert_id = -1;
+	admin_id = -1;
 }
 
 void LaptopInfo::SetInfo(int id, int number, int type, int engid, int expid)
@@ -84,7 +84,7 @@ void LaptopInfo::SetInfo(int id, int number, int type, int engid, int expid)
 	order_number = number;
 	request_type = type;
 	engineer_id = engid;
-	expert_id = expid;
+	admin_id = expid;
 }
 
 void LaptopInfo::CopyOrder(CustomerRequest order)
@@ -94,17 +94,17 @@ void LaptopInfo::CopyOrder(CustomerRequest order)
 	request_type = order.GetLaptopType();
 }
 void LaptopInfo::SetEngineerId(int id) { engineer_id = id; }
-void LaptopInfo::SetExpertId(int id) { expert_id = id; }
+void LaptopInfo::SetExpertId(int id) { admin_id = id; }
 
 int LaptopInfo::GetCustomerId() { return customer_id; }
 int LaptopInfo::GetOrderNumber() { return order_number; }
 int LaptopInfo::GetLaptopType() { return request_type; }
 int LaptopInfo::GetEngineerId() { return engineer_id; }
-int LaptopInfo::GetExpertId() { return expert_id; }
+int LaptopInfo::GetExpertId() { return admin_id; }
 
 int LaptopInfo::Size()
 {
-	return sizeof(customer_id) + sizeof(order_number) + sizeof(request_type) + sizeof(engineer_id) + sizeof(expert_id);
+	return sizeof(customer_id) + sizeof(order_number) + sizeof(request_type) + sizeof(engineer_id) + sizeof(admin_id);
 }
 
 void LaptopInfo::Marshal(char *buffer)
@@ -113,7 +113,7 @@ void LaptopInfo::Marshal(char *buffer)
 	int net_order_number = htonl(order_number);
 	int net_laptop_type = htonl(request_type);
 	int net_engineer_id = htonl(engineer_id);
-	int net_expert_id = htonl(expert_id);
+	int net_expert_id = htonl(admin_id);
 	int offset = 0;
 
 	memcpy(buffer + offset, &net_customer_id, sizeof(net_customer_id));
@@ -150,7 +150,7 @@ void LaptopInfo::Unmarshal(char *buffer)
 	order_number = ntohl(net_order_number);
 	request_type = ntohl(net_laptop_type);
 	engineer_id = ntohl(net_engineer_id);
-	expert_id = ntohl(net_expert_id);
+	admin_id = ntohl(net_expert_id);
 }
 
 bool LaptopInfo::IsValid()
@@ -164,7 +164,7 @@ void LaptopInfo::Print()
 	std::cout << "num " << order_number << " ";
 	std::cout << "type " << request_type << " ";
 	std::cout << "engid " << engineer_id << " ";
-	std::cout << "expid " << expert_id << std::endl;
+	std::cout << "expid " << admin_id << std::endl;
 }
 
 Record::Record()

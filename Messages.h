@@ -18,7 +18,7 @@ public:
 		order_number = order.order_number;
 		request_type = order.request_type;
 	}
-	void SetOrder(int cid, int order_num, int type);
+	void SetCustomerRequest(int cid, int order_num, int type);
 	int GetCustomerId();
 	int GetOrderNumber();
 	int GetLaptopType();
@@ -40,7 +40,7 @@ private:
 	int order_number;
 	int request_type;
 	int engineer_id;
-	int expert_id;
+	int admin_id;
 
 public:
 	LaptopInfo();
@@ -50,7 +50,7 @@ public:
 		order_number = info.order_number;
 		request_type = info.request_type;
 		engineer_id = info.engineer_id;
-		expert_id = info.expert_id;
+		admin_id = info.admin_id;
 	}
 	void SetInfo(int cid, int order_num, int type, int engid, int expid);
 	void CopyOrder(CustomerRequest order);

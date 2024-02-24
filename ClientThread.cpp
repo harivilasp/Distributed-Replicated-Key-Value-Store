@@ -22,7 +22,7 @@ void ClientThreadClass::
 		{
 			CustomerRequest order;
 			Record record;
-			order.SetOrder(customer_id, i, request_type);
+			order.SetCustomerRequest(customer_id, i, request_type);
 			record = stub.ReadRecord(order);
 			std::cout << "Thread " << customer_id << " record " << i << std::endl;
 			record.Print();
@@ -35,7 +35,7 @@ void ClientThreadClass::
 		CustomerRequest order;
 		LaptopInfo laptop;
 		std::cout << "Thread " << customer_id << " order " << i << std::endl;
-		order.SetOrder(customer_id, i, request_type);
+		order.SetCustomerRequest(customer_id, i, request_type);
 
 		timer.Start();
 		laptop = stub.OrderLaptop(order);

@@ -206,7 +206,7 @@ void LaptopFactory::MakeReplicaConnections()
 			stub->Init(replica.first, replica.second);
 			std::cout << "Made connection to " << replica.first << ":" << replica.second << std::endl;
 			CustomerRequest order;
-			order.SetOrder(0, 0, 4);
+			order.SetCustomerRequest(0, 0, 4);
 			stub->OrderLaptop(order);
 			std::cout << "Registration Order sent to replica" << std::endl;
 			replica_stubs.emplace_back(std::move(stub)); // Move the unique_ptr into the vector

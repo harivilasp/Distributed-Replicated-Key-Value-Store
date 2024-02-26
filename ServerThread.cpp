@@ -162,6 +162,8 @@ void LaptopFactory::
 			{
 				is_backup_node = true;
 				primary_id = customerRequest.GetCustomerId();
+				// laptop.SetEngineerId(last_index);
+				// laptop.SetInfo(-1, committed_index, last_index, -1, -1);
 				stub.SendLaptop(laptop);
 			}
 			break;
@@ -210,7 +212,7 @@ void LaptopFactory::ExpertThread(int id)
 			ReplicaResponse response = replica->SendReplicaRequest(request);
 			std::cout << "recieved confirmation from replica " << response.GetStatus() << std::endl;
 		}
-		customer_record[req->laptop.GetCustomerId()] = smr_log.size() - 1;
+		customer_record[req->laptop.GetCustomerId()] = req->laptop.GetOrderNumber();
 
 		committed_index = smr_log.size() - 1;
 		cr_lock.unlock();
@@ -239,6 +241,19 @@ void LaptopFactory::MakeReplicaConnections()
 		CustomerRequest customerRequest;
 		customerRequest.SetCustomerRequest(factory_id, 0, 4);
 		stub->OrderLaptop(customerRequest);
+		// LaptopInfo replicaStatus = stub->OrderLaptop(customerRequest);
+		// if (replicaStatus.GetOrderNumber() < last_index)
+		// {
+		// 	std::cout << "Replica is not up to date updating it" << std::endl;
+		// 	for (int i = replicaStatus.GetOrderNumber() + 1; i <= last_index; i++)
+		// 	{
+		// 		ReplicaRequest replicaRequest;
+		// 		replicaRequest.SetRequest(factory_id, committed_index, last_index, smr_log[i]);
+		// 		ReplicaResponse response = stub->SendReplicaRequest(replicaRequest);
+		// 		std::cout << "Recieved confirmation from replica " << response.GetStatus() << std::endl;
+		// 	}
+		// 	// continue;
+		// }
 		std::cout << "Registration Order sent to replica" << std::endl;
 		replica_stubs.emplace_back(std::move(stub)); // Move the unique_ptr into the vector
 	}

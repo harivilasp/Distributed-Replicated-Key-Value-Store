@@ -8,17 +8,17 @@ void ServerStub::Init(std::unique_ptr<ServerSocket> socket)
 	this->socket = std::move(socket);
 }
 
-CustomerRequest ServerStub::ReceiveOrder()
+CustomerRequest ServerStub::ReceiveRequest()
 {
 	char buffer[32];
 	CustomerRequest order;
-	std::cout << "ServerStub::ReceiveOrder: waiting for order" << std::endl;
+	std::cout << "ServerStub::ReceiveRequest: waiting for order" << std::endl;
 	if (socket->Recv(buffer, order.Size(), 0))
 	{
 		order.Unmarshal(buffer);
-		std::cout << "ServerStub::ReceiveOrder: order.Size() = " << order.Size() << std::endl;
+		std::cout << "ServerStub::ReceiveRequest: order.Size() = " << order.Size() << std::endl;
 		order.Print();
-		std::cout << "ServerStub::ReceiveOrder: order printed" << std::endl;
+		std::cout << "ServerStub::ReceiveRequest: order printed" << std::endl;
 	}
 	return order;
 }

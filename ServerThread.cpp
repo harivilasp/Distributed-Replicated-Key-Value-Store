@@ -109,7 +109,7 @@ void LaptopFactory::
 			continue;
 		}
 		std::cout << "EngineerThread: before processing" << std::endl;
-		customerRequest = stub.ReceiveOrder();
+		customerRequest = stub.ReceiveRequest();
 		if (!customerRequest.IsValid())
 		{
 			std::cout << "Connection broken engineer" << std::endl;
@@ -195,7 +195,7 @@ void LaptopFactory::ExpertThread(int id)
 		smr_log.push_back({1, req->laptop.GetCustomerId(), last_index + 1});
 		std::cout << "smr_log size: " << smr_log.size() << std::endl;
 		last_index += 1;
-		if (primary_id == -1)
+		if (primary_id != factory_id)
 		{
 			primary_id = factory_id;
 			MakeReplicaConnections();

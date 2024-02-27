@@ -43,7 +43,7 @@ void LaptopFactory::
 	EngineerThread(std::unique_ptr<ServerSocket> socket, int id)
 {
 	bool is_backup_node = false;
-	std::cout << "EngineerThread: id = " << id << std::endl;
+	// std::cout << "EngineerThread: id = " << id << std::endl;
 	int engineer_id = id;
 	int request_type;
 	CustomerRequest customerRequest;
@@ -57,26 +57,26 @@ void LaptopFactory::
 	{
 		if (is_backup_node) // role of back up node
 		{
-			std::cout << "EngineerThread: is_backup_node = true" << std::endl;
-			std::cout << "EngineerThread: last_index = " << last_index << std::endl;
-			std::cout << "EngineerThread: committed_index = " << committed_index << std::endl;
-			std::cout << "EngineerThread: smr_log.size() = " << smr_log.size() << std::endl;
-			std::cout << "EngineerThread: customer_record.size() = " << customer_record.size() << std::endl;
+			// std::cout << "EngineerThread: is_backup_node = true" << std::endl;
+			// std::cout << "EngineerThread: last_index = " << last_index << std::endl;
+			// std::cout << "EngineerThread: committed_index = " << committed_index << std::endl;
+			// std::cout << "EngineerThread: smr_log.size() = " << smr_log.size() << std::endl;
+			// std::cout << "EngineerThread: customer_record.size() = " << customer_record.size() << std::endl;
 
 			ReplicaRequest replicaRequest = stub.ReceiveReplicaRequest();
 			if (!replicaRequest.IsValid())
 			{
-				std::cout << "Connection broken back up node" << std::endl;
+				// std::cout << "Connection broken back up node" << std::endl;
 				is_backup_node = false;
 				primary_id = -1;
 				continue;
 			}
 			// request
-			std::cout << "EngineerThread: replicaRequest.GetFactoryId() = " << replicaRequest.GetFactoryId() << std::endl;
-			std::cout << "EngineerThread: replicaRequest.GetCommittedIndex() = " << replicaRequest.GetCommittedIndex() << std::endl;
-			std::cout << "EngineerThread: replicaRequest.GetLastIndex() = " << replicaRequest.GetLastIndex() << std::endl;
-			std::cout << "EngineerThread: replicaRequest.GetMapOp().arg1 = " << replicaRequest.GetMapOp().arg1 << std::endl;
-			std::cout << "EngineerThread: replicaRequest.GetMapOp().arg2 = " << replicaRequest.GetMapOp().arg2 << std::endl;
+			// std::cout << "EngineerThread: replicaRequest.GetFactoryId() = " << replicaRequest.GetFactoryId() << std::endl;
+			// std::cout << "EngineerThread: replicaRequest.GetCommittedIndex() = " << replicaRequest.GetCommittedIndex() << std::endl;
+			// std::cout << "EngineerThread: replicaRequest.GetLastIndex() = " << replicaRequest.GetLastIndex() << std::endl;
+			// std::cout << "EngineerThread: replicaRequest.GetMapOp().arg1 = " << replicaRequest.GetMapOp().arg1 << std::endl;
+			// std::cout << "EngineerThread: replicaRequest.GetMapOp().arg2 = " << replicaRequest.GetMapOp().arg2 << std::endl;
 			// process request
 
 			if (replicaRequest.GetLastIndex() > committed_index)
@@ -90,36 +90,35 @@ void LaptopFactory::
 				{
 					MapOp op = smr_log[i];
 					customer_record[op.arg1] = op.arg2;
-					std::cout << "Applied map op to customer record"
-							  << "op.arg1 " << op.arg1 << "op.arg2 " << op.arg2 << std::endl;
-					std::cout << "EngineerThread: customer_record = " << customer_record[op.arg1] << std::endl;
-					// std::cout << ""
+					// std::cout << "Applied map op to customer record"
+					// 		  << "op.arg1 " << op.arg1 << "op.arg2 " << op.arg2 << std::endl;
+					// std::cout << "EngineerThread: customer_record = " << customer_record[op.arg1] << std::endl;
 				}
 				last_index = replicaRequest.GetLastIndex();
 				committed_index = primary_committed_index;
 				cr_lock.unlock();
 				smr_lock.unlock();
 			}
-			std::cout << "EngineerThread: last_index = " << last_index << std::endl;
-			std::cout << "EngineerThread: committed_index = " << committed_index << std::endl;
+			// std::cout << "EngineerThread: last_index = " << last_index << std::endl;
+			// std::cout << "EngineerThread: committed_index = " << committed_index << std::endl;
 
 			ReplicaResponse response;
 			response.SetStatus(1);
 			stub.SendReplicaResponse(response);
 			continue;
 		}
-		std::cout << "EngineerThread: before processing" << std::endl;
+		// std::cout << "EngineerThread: before processing" << std::endl;
 		customerRequest = stub.ReceiveRequest();
 		if (!customerRequest.IsValid())
 		{
-			std::cout << "Connection broken engineer" << std::endl;
+			// std::cout << "Connection broken engineer" << std::endl;
 			break;
 		}
 		request_type = customerRequest.GetLaptopType();
-		std::cout << "EngineerThread: processing request_type = " << request_type << std::endl;
+		// std::cout << "EngineerThread: processing request_type = " << request_type << std::endl;
 		switch (request_type)
 		{
-		case 0:
+		case 0: // not used in this assignment
 			laptop = CreateRegularLaptop(customerRequest, engineer_id);
 			stub.SendLaptop(laptop);
 			break;
@@ -139,31 +138,29 @@ void LaptopFactory::
 				record.SetRecord(customerRequest.GetCustomerId(), -1);
 			}
 			stub.ReturnRecord(record);
-			record.Print();
+			// record.Print();
 			cr_lock.unlock();
 			break;
-		case 3: // read for all customer ids'
-			cr_lock.lock();
-			if (customer_record.find(customerRequest.GetCustomerId()) != customer_record.end())
-			{
-				int last_ind = customer_record[customerRequest.GetCustomerId()];
-				record.SetRecord(customerRequest.GetCustomerId(), last_ind);
-			}
-			else
-			{
-				record.SetRecord(customerRequest.GetCustomerId(), -1);
-			}
-			stub.ReturnRecord(record);
-			record.Print();
-			cr_lock.unlock();
-			break;
+		// case 3: // read for all customer ids'
+		// 	cr_lock.lock();
+		// 	if (customer_record.find(customerRequest.GetCustomerId()) != customer_record.end())
+		// 	{
+		// 		int last_ind = customer_record[customerRequest.GetCustomerId()];
+		// 		record.SetRecord(customerRequest.GetCustomerId(), last_ind);
+		// 	}
+		// 	else
+		// 	{
+		// 		record.SetRecord(customerRequest.GetCustomerId(), -1);
+		// 	}
+		// 	stub.ReturnRecord(record);
+		// 	record.Print();
+		// 	cr_lock.unlock();
+		// 	break;
 		case 4:
-			std::cout << "Special customerRequest recieved setting back up node to true" << std::endl;
+			// std::cout << "Special customerRequest recieved setting back up node to true" << std::endl;
 			{
 				is_backup_node = true;
 				primary_id = customerRequest.GetCustomerId();
-				// laptop.SetEngineerId(last_index);
-				// laptop.SetInfo(-1, committed_index, last_index, -1, -1);
 				stub.SendLaptop(laptop);
 			}
 			break;
@@ -193,24 +190,31 @@ void LaptopFactory::ExpertThread(int id)
 		ul.unlock();
 		smr_lock.lock();
 		cr_lock.lock();
-		std::cout << "special engineer thread smr_lock locked" << std::endl;
-		smr_log.push_back({1, req->laptop.GetCustomerId(), last_index + 1});
-		std::cout << "smr_log size: " << smr_log.size() << std::endl;
+		// std::cout << "special engineer thread smr_lock locked" << std::endl;
+		smr_log.push_back({1, req->laptop.GetCustomerId(), req->laptop.GetOrderNumber()});
+		// std::cout << "smr_log size: " << smr_log.size() << std::endl;
 		last_index += 1;
 		if (primary_id != factory_id)
 		{
 			primary_id = factory_id;
+			while (committed_index < last_index)
+			{
+				MapOp op = smr_log[committed_index + 1];
+				customer_record[op.arg1] = op.arg2;
+				committed_index++;
+			}
 			MakeReplicaConnections();
 			replicas_connections_made = true;
 		}
-		std::cout << "finished creating replicas" << std::endl;
+		// std::cout << "finished creating replicas" << std::endl;
 		ReplicaRequest request;
-		request.SetRequest(factory_id, committed_index, last_index, {1, req->laptop.GetCustomerId(), last_index});
+		request.SetRequest(factory_id, committed_index, last_index, {1, req->laptop.GetCustomerId(), req->laptop.GetOrderNumber()});
 		for (auto &replica : replica_stubs)
 		{
-			std::cout << "sending replica request to replica" << std::endl;
-			ReplicaResponse response = replica->SendReplicaRequest(request);
-			std::cout << "recieved confirmation from replica " << response.GetStatus() << std::endl;
+			// std::cout << "sending replica request to replica" << std::endl;
+			// ReplicaResponse response = replica->SendReplicaRequest(request);
+			replica->SendReplicaRequest(request);
+			// std::cout << "recieved confirmation from replica " << response.GetStatus() << std::endl;
 		}
 		customer_record[req->laptop.GetCustomerId()] = req->laptop.GetOrderNumber();
 
@@ -225,36 +229,21 @@ void LaptopFactory::ExpertThread(int id)
 
 void LaptopFactory::MakeReplicaConnections()
 {
-	std::cout << "Making replica connections" << std::endl;
-	// if (replica_stubs.size() == 0)
-	// {
+	// std::cout << "Making replica connections" << std::endl;
 	replica_stubs.clear();
 	for (auto &replica : replicas)
 	{
 		std::unique_ptr<ServerClientStub> stub(new ServerClientStub());
 		if (stub->Init(replica.first, replica.second) == 0)
 		{
-			std::cout << "Failed to connect to " << replica.first << ":" << replica.second << std::endl;
+			// std::cout << "Failed to connect to " << replica.first << ":" << replica.second << std::endl;
 			continue;
 		}
-		std::cout << "Made connection to " << replica.first << ":" << replica.second << std::endl;
+		// std::cout << "Made connection to " << replica.first << ":" << replica.second << std::endl;
 		CustomerRequest customerRequest;
 		customerRequest.SetCustomerRequest(factory_id, 0, 4);
 		stub->OrderLaptop(customerRequest);
-		// LaptopInfo replicaStatus = stub->OrderLaptop(customerRequest);
-		// if (replicaStatus.GetOrderNumber() < last_index)
-		// {
-		// 	std::cout << "Replica is not up to date updating it" << std::endl;
-		// 	for (int i = replicaStatus.GetOrderNumber() + 1; i <= last_index; i++)
-		// 	{
-		// 		ReplicaRequest replicaRequest;
-		// 		replicaRequest.SetRequest(factory_id, committed_index, last_index, smr_log[i]);
-		// 		ReplicaResponse response = stub->SendReplicaRequest(replicaRequest);
-		// 		std::cout << "Recieved confirmation from replica " << response.GetStatus() << std::endl;
-		// 	}
-		// 	// continue;
-		// }
-		std::cout << "Registration Order sent to replica" << std::endl;
+		// std::cout << "Registration Order sent to replica" << std::endl;
 		replica_stubs.emplace_back(std::move(stub)); // Move the unique_ptr into the vector
 	}
 	// }

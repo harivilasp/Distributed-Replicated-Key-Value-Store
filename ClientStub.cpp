@@ -17,9 +17,9 @@ LaptopInfo ClientStub::OrderLaptop(CustomerRequest order)
 	size = order.Size();
 	if (socket.Send(buffer, size, 0))
 	{
-		std::cout << "ClientStub::OrderLaptop: sent order" << std::endl;
+		// std::cout << "ClientStub::OrderLaptop: sent order" << std::endl;
 		size = info.Size();
-		std::cout << "ClientStub::OrderLaptop: waiting for laptopinfo = " << std::endl;
+		// std::cout << "ClientStub::OrderLaptop: waiting for laptopinfo = " << std::endl;
 		if (socket.Recv(buffer, size, 0))
 		{
 			info.Unmarshal(buffer);
@@ -37,13 +37,12 @@ CustomerRecord ClientStub::ReadRecord(CustomerRequest order)
 	size = order.Size();
 	if (socket.Send(buffer, size, 0))
 	{
-		std::cout << "ClientStub::ReadRecord: sent order" << std::endl;
-		// memset(buffer, 0, 32);
+		// std::cout << "ClientStub::ReadRecord: sent order" << std::endl;
 		size = record.Size();
-		std::cout << "ClientStub::ReadRecord: waiting for record = " << std::endl;
+		// std::cout << "ClientStub::ReadRecord: waiting for record = " << std::endl;
 		if (socket.Recv(buffer, size, 0))
 		{
-			std::cout << "ClientStub::ReadRecord: received record" << std::endl;
+			// std::cout << "ClientStub::ReadRecord: received record" << std::endl;
 			record.Unmarshal(buffer);
 		}
 	}
@@ -58,7 +57,7 @@ ReplicaResponse ClientStub::SendReplicaRequest(ReplicaRequest replicaRequest)
 	ReplicaResponse response;
 	if (socket.Send(buffer, size, 0))
 	{
-		std::cout << "ClientStub::SendReplicaRequest: waiting for ReplicaResponse = " << std::endl;
+		// std::cout << "ClientStub::SendReplicaRequest: waiting for ReplicaResponse = " << std::endl;
 		size = response.Size();
 		if (socket.Recv(buffer, size, 0))
 		{

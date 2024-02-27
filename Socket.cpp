@@ -21,7 +21,7 @@ Socket::~Socket()
 {
 	if (is_initialized_)
 	{
-		std::cout << "Socket::~Socket: closing socket" << std::endl;
+		// std::cout << "Socket::~Socket: closing socket" << std::endl;
 		Close();
 	}
 }

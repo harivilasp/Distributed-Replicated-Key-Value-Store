@@ -209,8 +209,7 @@ void CustomerRecord::Unmarshal(char *buffer)
 
 void CustomerRecord::Print()
 {
-	std::cout << "id " << customer_id << " ";
-	std::cout << "last " << last_order << std::endl;
+	std::cout << customer_id << "\t" << last_order << std::endl;
 }
 
 ReplicaRequest::ReplicaRequest()

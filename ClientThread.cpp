@@ -22,10 +22,11 @@ void ClientThreadClass::
 		{
 			CustomerRequest customerRequest;
 			CustomerRecord customerRecord;
-			customerRequest.SetCustomerRequest(i, i, request_type);
+			customerRequest.SetCustomerRequest(i, i, 2);
 			customerRecord = stub.ReadRecord(customerRequest);
-			std::cout << "Thread " << i << " customerRecord" << std::endl;
-			customerRecord.Print();
+			// std::cout << "Thread " << i << " customerRecord" << std::endl;
+			if (customerRecord.GetLastOrder() != -1)
+				customerRecord.Print();
 		}
 		return;
 	}
@@ -35,7 +36,7 @@ void ClientThreadClass::
 		CustomerRecord customerRecord;
 		customerRequest.SetCustomerRequest(customer_id, 0, request_type);
 		customerRecord = stub.ReadRecord(customerRequest);
-		std::cout << "Thread " << customer_id << " customerRecord " << 0 << std::endl;
+		// std::cout << "Thread " << customer_id << " customerRecord " << 0 << std::endl;
 		customerRecord.Print();
 		return;
 	}
@@ -44,7 +45,7 @@ void ClientThreadClass::
 	{
 		CustomerRequest customerRequest;
 		LaptopInfo laptop;
-		std::cout << "Thread " << customer_id << " customerRequest " << i << std::endl;
+		// std::cout << "Thread " << customer_id << " customerRequest " << i << std::endl;
 		customerRequest.SetCustomerRequest(customer_id, i, request_type);
 
 		timer.Start();

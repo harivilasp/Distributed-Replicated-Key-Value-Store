@@ -12,7 +12,7 @@ int ClientStub::Init(std::string ip, int port)
 	catch (const char *msg)
 	{
 		// std::cerr << msg << std::endl;
-		return -1;
+		return 0;
 	}
 }
 

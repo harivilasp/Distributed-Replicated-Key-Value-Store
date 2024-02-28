@@ -34,7 +34,7 @@ void ClientThreadClass::
 	{
 		CustomerRequest customerRequest;
 		CustomerRecord customerRecord;
-		customerRequest.SetCustomerRequest(customer_id, 0, request_type);
+		customerRequest.SetCustomerRequest(orders, 0, request_type); // here orders is customer id
 		customerRecord = stub.ReadRecord(customerRequest);
 		// std::cout << "Thread " << customer_id << " customerRecord " << 0 << std::endl;
 		customerRecord.Print();
@@ -54,7 +54,7 @@ void ClientThreadClass::
 
 		if (!laptop.IsValid())
 		{
-			std::cout << "Invalid laptop " << customer_id << std::endl;
+			// std::cout << "Invalid laptop " << customer_id << std::endl;
 			break;
 		}
 	}

@@ -39,6 +39,11 @@ int main(int argc, char *argv[])
 		num_customers = atoi(argv[3]);
 		num_orders = atoi(argv[4]);
 		request_type = atoi(argv[5]);
+		if (request_type == 2)
+		{
+			num_orders = num_customers;
+			num_customers = 1;
+		}
 	}
 
 	timer.Start();

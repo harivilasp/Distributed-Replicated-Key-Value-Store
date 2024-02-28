@@ -5,7 +5,15 @@ ClientStub::ClientStub() {}
 
 int ClientStub::Init(std::string ip, int port)
 {
-	return socket.Init(ip, port);
+	try
+	{
+		return socket.Init(ip, port);
+	}
+	catch (const char *msg)
+	{
+		// std::cerr << msg << std::endl;
+		return -1;
+	}
 }
 
 LaptopInfo ClientStub::OrderLaptop(CustomerRequest order)

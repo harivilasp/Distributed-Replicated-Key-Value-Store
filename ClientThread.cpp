@@ -13,7 +13,7 @@ void ClientThreadClass::
 	request_type = type;
 	if (!stub.Init(ip, port))
 	{
-		std::cout << "Thread " << customer_id << " failed to connect" << std::endl;
+		std::cout << "Primary server is not available" << std::endl;
 		return;
 	}
 	if (request_type == 3)

@@ -203,9 +203,10 @@ void LaptopFactory::ExpertThread(int id)
 				customer_record[op.arg1] = op.arg2;
 				committed_index++;
 			}
-			MakeReplicaConnections();
-			replicas_connections_made = true;
+			// MakeReplicaConnections();
+			// replicas_connections_made = true;
 		}
+		MakeReplicaConnections();
 		// std::cout << "finished creating replicas" << std::endl;
 		ReplicaRequest request;
 		request.SetRequest(factory_id, committed_index, last_index, {1, req->laptop.GetCustomerId(), req->laptop.GetOrderNumber()});

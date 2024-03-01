@@ -141,21 +141,6 @@ void LaptopFactory::
 			// record.Print();
 			cr_lock.unlock();
 			break;
-		// case 3: // read for all customer ids'
-		// 	cr_lock.lock();
-		// 	if (customer_record.find(customerRequest.GetCustomerId()) != customer_record.end())
-		// 	{
-		// 		int last_ind = customer_record[customerRequest.GetCustomerId()];
-		// 		record.SetRecord(customerRequest.GetCustomerId(), last_ind);
-		// 	}
-		// 	else
-		// 	{
-		// 		record.SetRecord(customerRequest.GetCustomerId(), -1);
-		// 	}
-		// 	stub.ReturnRecord(record);
-		// 	record.Print();
-		// 	cr_lock.unlock();
-		// 	break;
 		case 4:
 			// std::cout << "Special customerRequest recieved setting back up node to true" << std::endl;
 			{
@@ -164,6 +149,23 @@ void LaptopFactory::
 				stub.SendLaptop(laptop);
 			}
 			break;
+		case 5:
+			// std::cout << "EngineerThread: replica recover request" << std::endl;
+			laptop.SetInfo(customerRequest.GetCustomerId(), last_index, primary_id, 0, 0);
+			stub.SendLaptop(laptop);
+			break;
+		case 6:
+		{
+			int wanted_index;
+			MapOp op;
+			wanted_index = customerRequest.GetOrderNumber();
+			smr_lock.lock();
+			op = smr_log[wanted_index];
+			record.SetRecord(op.arg1, op.arg2);
+			stub.ReturnRecord(record);
+			smr_lock.unlock();
+		}
+		break;
 		default:
 			std::cout << "Undefined laptop type: "
 					  << request_type << std::endl;
@@ -265,8 +267,50 @@ void LaptopFactory::SetFactoryId(int id)
 	factory_id = id;
 }
 
-void LaptopFactory::AddReplica(std::string ip, int port)
+void LaptopFactory::AddReplica(int id, std::string ip, int port)
 {
 	std::pair<std::string, int> replica = {ip, port};
 	replicas.push_back(replica);
+	replica_id_to_ip_port[id] = replica;
+}
+
+void LaptopFactory::RecoverReplica()
+{
+	ServerClientStub serverClientStub;
+	for (auto &replica : replicas)
+	{
+		// std::cout << "In RecoverReplica: Trying to connect to " << replica.first << ":" << replica.second << std::endl;
+		if (serverClientStub.Init(replica.first, replica.second) != 0)
+		{
+			CustomerRequest customerRequest;
+			CustomerRecord customerRecord;
+			customerRequest.SetCustomerRequest(factory_id, last_index, 5);
+			LaptopInfo otherstatus = serverClientStub.OrderLaptop(customerRequest);
+			int otherserverLastIndex = otherstatus.GetOrderNumber();
+			primary_id = otherstatus.GetCustomerId();
+			std::cout << "Recovering data : otherserverLastIndex = " << otherserverLastIndex << " current last index " << last_index << std::endl;
+			if (otherserverLastIndex > last_index)
+			{
+				cr_lock.lock();
+				smr_lock.lock();
+				for (int i = last_index + 1; i <= otherserverLastIndex; i++)
+				{
+					customerRequest.SetCustomerRequest(factory_id, i, 6);
+					customerRecord = serverClientStub.ReadRecord(customerRequest);
+					MapOp op = {1, customerRecord.GetCustomerId(), customerRecord.GetLastOrder()};
+					smr_log.push_back(op);
+					customer_record[op.arg1] = op.arg2;
+					std::cout << "Recovering data Applied map op to customer record"
+							  << " op.arg1 " << op.arg1 << " op.arg2 " << op.arg2 << std::endl;
+				}
+				cr_lock.unlock();
+				smr_lock.unlock();
+				last_index = otherserverLastIndex;
+				committed_index = last_index;
+			}
+
+			std::cout << "Current Replica now is up to date" << std::endl;
+			break;
+		}
+	}
 }

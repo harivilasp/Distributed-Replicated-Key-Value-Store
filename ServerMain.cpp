@@ -37,11 +37,11 @@ int main(int argc, char *argv[])
 		int startindex = 4;
 		for (int k = 0; k < num_replicas; k++)
 		{
-			factory.AddReplica(argv[startindex + 1], atoi(argv[startindex + 2]));
+			factory.AddReplica(atoi(argv[startindex]), argv[startindex + 1], atoi(argv[startindex + 2]));
 			startindex += 3;
 		}
 		factory.SetFactoryId(id_factory);
-
+		factory.RecoverReplica();
 		for (int i = 0; i < num_experts; i++)
 		{
 			std::thread expert_thread(&LaptopFactory::ExpertThread,

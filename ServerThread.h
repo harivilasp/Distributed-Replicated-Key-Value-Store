@@ -30,6 +30,7 @@ private:
 	std::mutex smr_lock;
 	std::mutex cr_lock;
 	std::vector<std::pair<std::string, int>> replicas;
+	std::map<int, std::pair<std::string, int>> replica_id_to_ip_port;
 	std::vector<std::unique_ptr<ServerClientStub>> replica_stubs;
 
 	bool replicas_connections_made = false;
@@ -51,9 +52,10 @@ public:
 	LaptopFactory();
 	void MakeReplicaConnections();
 	void SetFactoryId(int id);
-	void AddReplica(std::string ip, int port);
+	void AddReplica(int id, std::string ip, int port);
 	void SetPrimaryId(int id);
 	void GetPrimaryId();
+	void RecoverReplica();
 };
 
 #endif // end of #ifndef __SERVERTHREAD_H__

@@ -6,7 +6,7 @@
 #include <map>
 
 #include "ServerSocket.h"
-#include "ServerThread.h"
+#include "LoadThread.h"
 
 int main(int argc, char *argv[])
 {
@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 	int id_factory;
 	int num_replicas = 1;
 	ServerSocket socket;
-	LaptopFactory factory;
+	LoadFactory factory;
 	std::unique_ptr<ServerSocket> new_socket;
 	std::vector<std::thread> thread_vector;
 
@@ -32,20 +32,17 @@ int main(int argc, char *argv[])
 	else
 	{
 		port = atoi(argv[1]);
-		id_factory = atoi(argv[2]);
-		num_replicas = atoi(argv[3]);
-		int startindex = 4;
+		num_replicas = atoi(argv[2]);
+		int startindex = 3;
 		for (int k = 0; k < num_replicas; k++)
 		{
 			factory.AddReplica(atoi(argv[startindex]), argv[startindex + 1], atoi(argv[startindex + 2]));
 			startindex += 3;
 		}
 	}
-	factory.SetFactoryId(id_factory);
-	factory.RecoverReplica();
 	for (int i = 0; i < num_experts; i++)
 	{
-		std::thread expert_thread(&LaptopFactory::ExpertThread,
+		std::thread expert_thread(&LoadFactory::ExpertThread,
 								  &factory, engineer_cnt++);
 		thread_vector.push_back(std::move(expert_thread));
 	}
@@ -58,7 +55,7 @@ int main(int argc, char *argv[])
 
 	while ((new_socket = socket.Accept()))
 	{
-		std::thread engineer_thread(&LaptopFactory::EngineerThread,
+		std::thread engineer_thread(&LoadFactory::EngineerThread,
 									&factory, std::move(new_socket),
 									engineer_cnt++);
 		thread_vector.push_back(std::move(engineer_thread));

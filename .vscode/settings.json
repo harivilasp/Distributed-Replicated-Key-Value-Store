@@ -60,6 +60,8 @@
     "typeinfo": "cpp",
     "variant": "cpp",
     "vector": "cpp",
-    "algorithm": "cpp"
+    "algorithm": "cpp",
+    "utility": "cpp",
+    "execution": "cpp"
   }
 }

@@ -8,6 +8,9 @@
 #include <thread>
 #include <vector>
 #include <map>
+#include <fstream>
+#include <string>
+#include <sstream>
 
 #include "Messages.h"
 #include "ServerSocket.h"
@@ -56,6 +59,7 @@ public:
 	void SetPrimaryId(int id);
 	void GetPrimaryId();
 	void RecoverReplica();
+    void RecoverFromLogFile(const std::string& logFilePath);
 };
 
 #endif // end of #ifndef __SERVERTHREAD_H__

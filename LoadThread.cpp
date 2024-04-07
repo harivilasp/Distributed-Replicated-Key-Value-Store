@@ -55,7 +55,9 @@ void LoadFactory::
 	stub.Init(std::move(socket));
 	while (true)
 	{
+		std::cout << "LoadThread server:: EngineerThread while start " << id << std::endl;
 		customerRequest = stub.ReceiveRequest();
+		std::cout << "LoadThread server:: EngineerThread request recieved " << id << std::endl;
 		if (!customerRequest.IsValid())
 		{
 			// std::cout << "Connection broken engineer" << std::endl;
@@ -65,36 +67,42 @@ void LoadFactory::
 		switch (request_type)
 		{
 		case 1:
+			std::cout << "LoadThread server:: requesting laptop " << id << std::endl;
 			laptop = client_stub->OrderLaptop(customerRequest);
+			std::cout << "LoadThread server:: laptop received " << id << std::endl;
 			// set in cache and send back to client
 			stub.SendLaptop(laptop);
 			break;
 		case 2: // read for one customer id
-			cr_lock.lock();
-			if (customer_record_cache.find(customerRequest.GetCustomerId()) != customer_record_cache.end())
-			{
-				std::cout << "LoadThread server:: Read record from cache " << id << std::endl;
-				// get from cache
-				int last_ind = customer_record_cache[customerRequest.GetCustomerId()];
-				record.SetRecord(customerRequest.GetCustomerId(), last_ind);
-				std::this_thread::sleep_for(std::chrono::microseconds(10));
-			}
-			else
-			{
-				CustomerRecord temp = client_stub->ReadRecord(customerRequest);
-				record.SetRecord(customerRequest.GetCustomerId(), temp.GetLastOrder());
-				std::cout << "LoadThread server:: Read record from server " << id << std::endl;
-				temp.Print();
-				// also set in cache
-				if (temp.GetLastOrder() != -1)
-				{
-					customer_record_cache[customerRequest.GetCustomerId()] = temp.GetLastOrder();
-				}
-			}
+		{
+			std::cout << "LoadThread server:: read request received " << id << std::endl;
+			// cr_lock.lock();
+			// if (customer_record_cache.find(customerRequest.GetCustomerId()) != customer_record_cache.end())
+			// {
+			// 	std::cout << "LoadThread server:: Read record from cache " << id << std::endl;
+			// 	// get from cache
+			// 	int last_ind = customer_record_cache[customerRequest.GetCustomerId()];
+			// 	record.SetRecord(customerRequest.GetCustomerId(), last_ind);
+			// 	// std::this_thread::sleep_for(std::chrono::microseconds(10));
+			// }
+			// else
+			// {
+			CustomerRecord temp = client_stub->ReadRecord(customerRequest);
+			record.SetRecord(customerRequest.GetCustomerId(), temp.GetLastOrder());
+			std::cout << "LoadThread server:: Read record from server " << id << std::endl;
+			temp.Print();
+			// // also set in cache
+			// if (temp.GetLastOrder() != -1)
+			// {
+			// 	customer_record_cache[customerRequest.GetCustomerId()] = temp.GetLastOrder();
+			// }
+			// }
+			std::cout << "LoadThread server:: read request returning " << id << std::endl;
 			stub.ReturnRecord(record);
 			// record.Print();
-			cr_lock.unlock();
+			// cr_lock.unlock();
 			break;
+		}
 		default:
 			std::cout << "Undefined laptop type: "
 					  << request_type << std::endl;
@@ -151,7 +159,10 @@ std::unique_ptr<ServerClientStub> LoadFactory::connect_server(int id)
 		int serverNumber = round_robin_counter % replicas.size();
 		if (stub->Init(replicas[serverNumber].first, replicas[serverNumber].second))
 		{
-			std::cout << "LoadThread:: connected to server " << id << replicas[serverNumber].first << replicas[serverNumber].second << " : " << round_robin_counter << std::endl;
+			std::cout << "LoadThread:: connected to server " << serverNumber
+            << " : " << replicas[serverNumber].first
+            <<" : "<< replicas[serverNumber].second
+            <<" : " << round_robin_counter << std::endl;
 			connected = true;
 			break;
 		}

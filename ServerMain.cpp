@@ -42,6 +42,8 @@ int main(int argc, char *argv[])
 		}
 	}
 	factory.SetFactoryId(id_factory);
+    // log file name match with factory id
+//    factory.RecoverFromLogFile("log" + std::to_string(id_factory) + ".txt");
 	factory.RecoverReplica();
 	for (int i = 0; i < num_experts; i++)
 	{

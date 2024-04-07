@@ -2,6 +2,7 @@
 #include <memory>
 #include <utility>
 
+
 #include "ServerThread.h"
 #include "ServerStub.h"
 
@@ -43,7 +44,7 @@ void LaptopFactory::
 	EngineerThread(std::unique_ptr<ServerSocket> socket, int id)
 {
 	bool is_backup_node = false;
-	// std::cout << "EngineerThread: id = " << id << std::endl;
+	 std::cout << "EngineerThread: id = " << id << std::endl;
 	int engineer_id = id;
 	int request_type;
 	CustomerRequest customerRequest;
@@ -107,15 +108,15 @@ void LaptopFactory::
 			stub.SendReplicaResponse(response);
 			continue;
 		}
-		// std::cout << "EngineerThread: before processing" << std::endl;
+		 std::cout << "EngineerThread: before processing" << std::endl;
 		customerRequest = stub.ReceiveRequest();
 		if (!customerRequest.IsValid())
 		{
-			// std::cout << "Connection broken engineer" << std::endl;
+			 std::cout << "Connection broken engineer" << std::endl;
 			break;
 		}
 		request_type = customerRequest.GetLaptopType();
-		// std::cout << "EngineerThread: processing request_type = " << request_type << std::endl;
+		 std::cout << "EngineerThread: processing request_type = " << request_type << std::endl;
 		switch (request_type)
 		{
 		case 0: // not used in this assignment
@@ -142,7 +143,7 @@ void LaptopFactory::
 			cr_lock.unlock();
 			break;
 		case 4:
-			// std::cout << "Special customerRequest recieved setting back up node to true" << std::endl;
+            std::cout << "Special customerRequest received setting back up node to true" << std::endl;
 			{
 				is_backup_node = true;
 				primary_id = customerRequest.GetCustomerId();
@@ -150,7 +151,7 @@ void LaptopFactory::
 			}
 			break;
 		case 5:
-			// std::cout << "EngineerThread: replica recover request" << std::endl;
+			 std::cout << "EngineerThread: replica recover request" << std::endl;
 			laptop.SetInfo(customerRequest.GetCustomerId(), last_index, primary_id, 0, 0);
 			stub.SendLaptop(laptop);
 			break;
@@ -313,4 +314,31 @@ void LaptopFactory::RecoverReplica()
 			break;
 		}
 	}
+}
+
+void LaptopFactory::RecoverFromLogFile(const std::string& logFilePath) {
+    std::ifstream logFile(logFilePath);
+    std::string line;
+    if (!logFile.is_open()) {
+        std::cerr << "Failed to open log file: " << logFilePath << std::endl;
+        return;
+    }
+    while (std::getline(logFile, line)) {
+        std::istringstream iss(line);
+        std::string operationType;
+        int customerId, lastOrderIndex;
+
+        if (!(iss >> operationType >> customerId >> lastOrderIndex)) {
+            std::cerr << "Failed to parse line: " << line << std::endl;
+            continue;
+        }
+        smr_log.push_back({1, customerId, lastOrderIndex});
+        std::cout << "Updated customerId " << customerId << " with lastOrderIndex " << lastOrderIndex << std::endl;
+    }
+
+    logFile.close();
+    std::cout << "Final state of customerLastOrderIndex map:" << std::endl;
+    for (const auto& entry : customer_record) {
+        std::cout << "CustomerId: " << entry.first << ", LastOrderIndex: " << entry.second << std::endl;
+    }
 }

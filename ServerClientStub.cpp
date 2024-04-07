@@ -23,14 +23,14 @@ LaptopInfo ServerClientStub::OrderLaptop(CustomerRequest order)
 	int size;
 	order.Marshal(buffer);
 	size = order.Size();
-	// std::cout << "ServerClientStub::OrderLaptop: order.Size() = " << size << std::endl;
-	// order.Print();
-	// std::cout << "ServerClientStub::OrderLaptop: order printed" << std::endl;
+	std::cout << "ServerClientStub::OrderLaptop: order.Size() = " << size << std::endl;
+	order.Print();
+	std::cout << "ServerClientStub::OrderLaptop: order printed" << std::endl;
 	if (socket.Send(buffer, size, 0))
 	{
-		// std::cout << "ServerClientStub::OrderLaptop: sent order" << std::endl;
+		std::cout << "ServerClientStub::OrderLaptop: sent order" << std::endl;
 		size = info.Size();
-		// std::cout << "ServerClientStub::OrderLaptop: waiting for laptopinfo = " << std::endl;
+		std::cout << "ServerClientStub::OrderLaptop: waiting for laptopinfo = " << std::endl;
 		if (socket.Recv(buffer, size, 0))
 		{
 			info.Unmarshal(buffer);
@@ -48,12 +48,12 @@ CustomerRecord ServerClientStub::ReadRecord(CustomerRequest order)
 	size = order.Size();
 	if (socket.Send(buffer, size, 0))
 	{
-		// std::cout << "ServerClientStub::ReadRecord: sent order" << std::endl;
+		std::cout << "ServerClientStub::ReadRecord: sent order" << std::endl;
 		size = record.Size();
-		// std::cout << "ServerClientStub::ReadRecord: waiting for record = " << std::endl;
+		std::cout << "ServerClientStub::ReadRecord: waiting for record = " << std::endl;
 		if (socket.Recv(buffer, size, 0))
 		{
-			// std::cout << "ServerClientStub::ReadRecord: received record" << std::endl;
+			std::cout << "ServerClientStub::ReadRecord: received record" << std::endl;
 			record.Unmarshal(buffer);
 		}
 	}

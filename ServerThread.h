@@ -48,6 +48,7 @@ private:
 
 	LaptopInfo CreateRegularLaptop(CustomerRequest order, int engineer_id);
 	LaptopInfo CreateCustomLaptop(CustomerRequest order, int engineer_id);
+    void WriteToLogFile(MapOp op);
 
 public:
 	void EngineerThread(std::unique_ptr<ServerSocket> socket, int id);
@@ -59,7 +60,7 @@ public:
 	void SetPrimaryId(int id);
 	void GetPrimaryId();
 	void RecoverReplica();
-    void RecoverFromLogFile(const std::string& logFilePath);
+    void RecoverFromLogFile();
 };
 
 #endif // end of #ifndef __SERVERTHREAD_H__

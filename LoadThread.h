@@ -34,6 +34,8 @@ private:
 	std::vector<std::unique_ptr<ServerClientStub>> replica_stubs;
 	int round_robin_counter = 0;
 	std::mutex round_robin_lock;
+    int primary_server_index = 0;
+    std::mutex primary_server_lock;
 
 	bool replicas_connections_made = false;
 	int last_index;		 // the last index of the smr_log that has data
@@ -57,6 +59,7 @@ public:
 
 private:
 	std::unique_ptr<ServerClientStub> connect_server(int id);
+    std::unique_ptr<ServerClientStub> connect_round_robin_server();
 };
 
 #endif // end of #ifndef __SERVERTHREAD_H__

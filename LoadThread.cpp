@@ -50,7 +50,7 @@ void LoadFactory::
 
 	ServerStub stub;
 	std::unique_ptr<ServerClientStub> client_stub;
-	client_stub = connect_server(id);
+//	client_stub = connect_server(id);
 	CustomerRecord record;
 	stub.Init(std::move(socket));
 	while (true)
@@ -66,15 +66,26 @@ void LoadFactory::
 		request_type = customerRequest.GetLaptopType();
 		switch (request_type)
 		{
-		case 1:
-			std::cout << "LoadThread server:: requesting laptop " << id << std::endl;
-			laptop = client_stub->OrderLaptop(customerRequest);
-			std::cout << "LoadThread server:: laptop received " << id << std::endl;
-			// set in cache and send back to client
-			stub.SendLaptop(laptop);
-			break;
+		case 1: {
+            client_stub = connect_server(primary_server_index);
+            const int total_servers = replicas.size();
+            int attempts = 0;
+            while (!client_stub && attempts < total_servers) {
+                std::lock_guard<std::mutex> guard(primary_server_lock);
+                primary_server_index = (primary_server_index + 1) % total_servers;
+                client_stub = connect_server(primary_server_index);
+                attempts++;
+            }
+            std::cout << "LoadThread server:: requesting laptop " << id << std::endl;
+            laptop = client_stub->OrderLaptop(customerRequest);
+            std::cout << "LoadThread server:: laptop received " << id << std::endl;
+            // set in cache and send back to client
+            stub.SendLaptop(laptop);
+            break;
+        }
 		case 2: // read for one customer id
 		{
+            client_stub = connect_round_robin_server();
 			std::cout << "LoadThread server:: read request received " << id << std::endl;
 			// cr_lock.lock();
 			// if (customer_record_cache.find(customerRequest.GetCustomerId()) != customer_record_cache.end())
@@ -147,33 +158,32 @@ void LoadFactory::AddReplica(int id, std::string ip, int port)
 	replica_id_to_ip_port[id] = replica;
 }
 
-std::unique_ptr<ServerClientStub> LoadFactory::connect_server(int id)
-{
-	// connect with suitable server in round robin manner
-	std::lock_guard<std::mutex> guard(round_robin_lock);
-	bool connected = false;
-	int counter = 0;
-	std::unique_ptr<ServerClientStub> stub = std::unique_ptr<ServerClientStub>(new ServerClientStub());
-	while (!connected && counter < replicas.size())
-	{
-		int serverNumber = round_robin_counter % replicas.size();
-		if (stub->Init(replicas[serverNumber].first, replicas[serverNumber].second))
-		{
-			std::cout << "LoadThread:: connected to server " << serverNumber
-            << " : " << replicas[serverNumber].first
-            <<" : "<< replicas[serverNumber].second
-            <<" : " << round_robin_counter << std::endl;
-			connected = true;
-			break;
-		}
-		counter++;
-		round_robin_counter++;
-	}
-	round_robin_counter++;
-	if (counter >= replicas.size())
-	{
-		std::cout << "LoadThread:: Could not connect to any server" << std::endl;
-		// return stub;
-	}
-	return stub;
+std::unique_ptr<ServerClientStub> LoadFactory::connect_server(int ind) {
+    std::unique_ptr<ServerClientStub> stub = std::unique_ptr<ServerClientStub>(new ServerClientStub());
+    if (stub->Init(replicas[ind].first, replicas[ind].second))
+    {
+        std::cout << "LoadThread:: connected to server " << ind
+        << " : " << replicas[ind].first
+        <<" : "<< replicas[ind].second << std::endl;
+    } else {
+        return nullptr;
+    }
+    return stub;
+}
+
+std::unique_ptr<ServerClientStub> LoadFactory::connect_round_robin_server() {
+    std::lock_guard<std::mutex> guard(round_robin_lock);
+    std::unique_ptr<ServerClientStub> stub = nullptr;
+    const int total_servers = replicas.size();
+    int attempts = 0;
+    while (!stub && attempts < total_servers) {
+        int serverIndex = round_robin_counter % total_servers;
+        stub = connect_server(serverIndex);
+        round_robin_counter++;
+        attempts++;
+    }
+    if (!stub) {
+        std::cout << "LoadThread:: Could not connect to any server" << std::endl;
+    }
+    return stub;
 }

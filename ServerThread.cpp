@@ -194,7 +194,9 @@ void LaptopFactory::ExpertThread(int id)
 		smr_lock.lock();
 		cr_lock.lock();
 		// std::cout << "special engineer thread smr_lock locked" << std::endl;
-		smr_log.push_back({1, req->laptop.GetCustomerId(), req->laptop.GetOrderNumber()});
+        MapOp logOp = {1, req->laptop.GetCustomerId(), req->laptop.GetOrderNumber()};
+		smr_log.push_back(logOp);
+//        WriteToLogFile(logOp);
 		// std::cout << "smr_log size: " << smr_log.size() << std::endl;
 		last_index += 1;
 		if (primary_id != factory_id)
@@ -300,6 +302,7 @@ void LaptopFactory::RecoverReplica()
 					customerRecord = serverClientStub.ReadRecord(customerRequest);
 					MapOp op = {1, customerRecord.GetCustomerId(), customerRecord.GetLastOrder()};
 					smr_log.push_back(op);
+//                    WriteToLogFile(op);
 					customer_record[op.arg1] = op.arg2;
 					std::cout << "Recovering data Applied map op to customer record"
 							  << " op.arg1 " << op.arg1 << " op.arg2 " << op.arg2 << std::endl;
@@ -316,7 +319,8 @@ void LaptopFactory::RecoverReplica()
 	}
 }
 
-void LaptopFactory::RecoverFromLogFile(const std::string& logFilePath) {
+void LaptopFactory::RecoverFromLogFile() {
+    std::string logFilePath = std::to_string(factory_id) + ".log";
     std::ifstream logFile(logFilePath);
     std::string line;
     if (!logFile.is_open()) {
@@ -341,4 +345,17 @@ void LaptopFactory::RecoverFromLogFile(const std::string& logFilePath) {
     for (const auto& entry : customer_record) {
         std::cout << "CustomerId: " << entry.first << ", LastOrderIndex: " << entry.second << std::endl;
     }
+}
+
+void LaptopFactory::WriteToLogFile(MapOp op) {
+    // log file name same as factory id
+    std::string logFilePath = std::to_string(factory_id) + ".log";
+    std::ofstream logFile(logFilePath);
+    if (!logFile.is_open()) {
+        std::cerr << "Failed to open log file: " << logFilePath << std::endl;
+        return;
+    }
+    std::cout << "Writing to log file: " << logFilePath << " 1 " << op.arg1 << " " << op.arg2 << std::endl;
+    logFile << "1 " << op.arg1 << " " << op.arg2 << std::endl;
+    logFile.close();
 }

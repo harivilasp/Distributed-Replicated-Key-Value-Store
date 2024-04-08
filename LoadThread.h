@@ -8,6 +8,9 @@
 #include <thread>
 #include <vector>
 #include <map>
+#include <list>
+#include <unordered_map>
+#include <cassert>
 
 #include "Messages.h"
 #include "ServerSocket.h"
@@ -26,7 +29,7 @@ private:
 	std::mutex erq_lock;
 	std::condition_variable erq_cv;
 	std::vector<MapOp> smr_log;
-	std::map<int, int> customer_record_cache;
+	std::unordered_map<int, int> customer_record_cache;
 	std::mutex smr_lock;
 	std::mutex cr_lock;
 	std::vector<std::pair<std::string, int>> replicas;
@@ -36,6 +39,9 @@ private:
 	std::mutex round_robin_lock;
     int primary_server_index = 0;
     std::mutex primary_server_lock;
+    int cache_capacity = 6;
+    std::list<std::pair<int, int>> cache_list;
+    std::unordered_map<int, std::list<std::pair<int, int>>::iterator> lru_map;
 
 	bool replicas_connections_made = false;
 	int last_index;		 // the last index of the smr_log that has data
@@ -60,6 +66,9 @@ public:
 private:
 	std::unique_ptr<ServerClientStub> connect_server(int id);
     std::unique_ptr<ServerClientStub> connect_round_robin_server();
+    void get_from_cache(int customer_id, int& last_order, bool& found);
+    void set_in_cache(int customer_id, int last_order);
+    void remove_from_cache(int customer_id);
 };
 
 #endif // end of #ifndef __SERVERTHREAD_H__

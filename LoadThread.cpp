@@ -112,38 +112,6 @@ void LoadFactory::
             cr_lock.unlock();
             break;
         }
-//		case 2: // read for one customer id
-//		{
-//            client_stub = connect_round_robin_server();
-//			std::cout << "LoadThread server:: read request received " << id << std::endl;
-//			 cr_lock.lock();
-//			 if (customer_record_cache.find(customerRequest.GetCustomerId()) != customer_record_cache.end())
-//			 {
-//			 	std::cout << "LoadThread server:: Read record from cache " << id << std::endl;
-//                 auto mapIt = customer_record_cache.find(customerRequest.GetCustomerId());
-//			 	// get from cache
-//			 	int last_ind = customer_record_cache[customerRequest.GetCustomerId()];
-//			 	record.SetRecord(customerRequest.GetCustomerId(), last_ind);
-//			 	// std::this_thread::sleep_for(std::chrono::microseconds(10));
-//			 }
-//			 else
-//			 {
-//                CustomerRecord temp = client_stub->ReadRecord(customerRequest);
-//                record.SetRecord(customerRequest.GetCustomerId(), temp.GetLastOrder());
-//                std::cout << "LoadThread server:: Read record from server " << id << std::endl;
-//                temp.Print();
-//                // also set in cache
-//                if (temp.GetLastOrder() != -1)
-//                {
-//                    customer_record_cache[customerRequest.GetCustomerId()] = temp.GetLastOrder();
-//                }
-//			 }
-//			std::cout << "LoadThread server:: read request returning " << id << std::endl;
-//			stub.ReturnRecord(record);
-//			// record.Print();
-//			 cr_lock.unlock();
-//			break;
-//		}
 		default:
 			std::cout << "Undefined laptop type: "
 					  << request_type << std::endl;
@@ -258,12 +226,11 @@ void LoadFactory::set_in_cache(int customer_id, int last_order) {
 
 void LoadFactory::remove_from_cache(int customer_id) {
     std::cout << "LoadThread:: Removing from cache " << customer_id << std::endl;
-//    std::lock_guard<std::mutex> lock(cr_lock); // Use the cache mutex to ensure thread safety
+    std::lock_guard<std::mutex> lock(cr_lock); // Use the cache mutex to ensure thread safety
     auto it = lru_map.find(customer_id);
     if (it != lru_map.end()) {
+        cache_list.erase(it->second);
         // If the customer_id is found in the cache, remove it
         lru_map.erase(it);
-        // Also remove from the access order list
-        cache_list.erase(it->second);
     }
 }

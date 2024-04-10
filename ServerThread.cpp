@@ -84,6 +84,7 @@ void LaptopFactory::
 				cr_lock.lock();
 				smr_lock.lock();
 				smr_log.push_back(replicaRequest.GetMapOp());
+                WriteToLogFile(replicaRequest.GetMapOp());
 				// primary_last_index = replicaRequest.GetLastIndex();
 				int primary_committed_index = replicaRequest.GetCommittedIndex();
 				for (int i = committed_index + 1; i <= primary_committed_index; i++)
@@ -128,6 +129,8 @@ void LaptopFactory::
 			break;
 		case 2: // read for one customer id
 			cr_lock.lock();
+            // simulated read request processing time
+            std::this_thread::sleep_for(std::chrono::microseconds(10));
 			if (customer_record.find(customerRequest.GetCustomerId()) != customer_record.end())
 			{
 				int last_ind = customer_record[customerRequest.GetCustomerId()];
@@ -260,8 +263,6 @@ LaptopFactory::LaptopFactory()
 	committed_index = -1;
 	primary_id = -1;
 	factory_id = -1;
-	// std::pair<std::string, int> replica = {"127.0.0.1", 12346};
-	// replicas.push_back(replica);
 }
 
 void LaptopFactory::SetFactoryId(int id)
@@ -311,7 +312,7 @@ void LaptopFactory::RecoverReplica()
 				last_index = otherserverLastIndex;
 				committed_index = last_index;
 			}
-
+//            std::this_thread::sleep_for(std::chrono::microseconds(100));
 			std::cout << "Current Replica now is up to date" << std::endl;
 			break;
 		}
@@ -339,10 +340,14 @@ void LaptopFactory::RecoverFromLogFile()
 			std::cerr << "Failed to parse line: " << line << std::endl;
 			continue;
 		}
-		smr_log.push_back({1, customerId, lastOrderIndex});
+        MapOp op = {1, customerId, lastOrderIndex};
+		smr_log.push_back(op);
+        customer_record[op.arg1] = op.arg2;
+//        last_index = last_index < op.arg2 ? op.arg2 : last_index;
 		std::cout << "Updated customerId " << customerId << " with lastOrderIndex " << lastOrderIndex << std::endl;
 	}
-
+    last_index = smr_log.size() - 1;
+    committed_index = last_index;
 	logFile.close();
 	std::cout << "Final state of customerLastOrderIndex map:" << std::endl;
 	for (const auto &entry : customer_record)

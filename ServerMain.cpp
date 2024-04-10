@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
 	}
 	factory.SetFactoryId(id_factory);
     // log file name match with factory id
-//    factory.RecoverFromLogFile();
+    factory.RecoverFromLogFile();
 	factory.RecoverReplica();
 	for (int i = 0; i < num_experts; i++)
 	{

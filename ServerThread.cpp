@@ -116,7 +116,7 @@ void LaptopFactory::
 			break;
 		}
 		request_type = customerRequest.GetLaptopType();
-//		std::cout << "EngineerThread: processing request_type = " << request_type << std::endl;
+		std::cout << "EngineerThread: processing request_type = " << request_type << std::endl;
 		switch (request_type)
 		{
 		case 0: // not used in this assignment
@@ -128,9 +128,11 @@ void LaptopFactory::
 			stub.SendLaptop(laptop);
 			break;
 		case 2: // read for one customer id
-			cr_lock.lock();
+
             // simulated read request processing time
-            std::this_thread::sleep_for(std::chrono::milliseconds (10));
+            CreateCustomLaptop(customerRequest, engineer_id);
+//            std::this_thread::sleep_for(std::chrono::milliseconds (10));
+            cr_lock.lock();
 			if (customer_record.find(customerRequest.GetCustomerId()) != customer_record.end())
 			{
 				int last_ind = customer_record[customerRequest.GetCustomerId()];
@@ -193,42 +195,47 @@ void LaptopFactory::ExpertThread(int id)
 		erq.pop();
 
 		ul.unlock();
-		smr_lock.lock();
-		cr_lock.lock();
-		// std::cout << "special engineer thread smr_lock locked" << std::endl;
-		MapOp logOp = {1, req->laptop.GetCustomerId(), req->laptop.GetOrderNumber()};
-		smr_log.push_back(logOp);
-        WriteToLogFile(logOp);
-		// std::cout << "smr_log size: " << smr_log.size() << std::endl;
-		last_index += 1;
-		if (primary_id != factory_id)
-		{
-			primary_id = factory_id;
-			while (committed_index < last_index)
-			{
-				MapOp op = smr_log[committed_index + 1];
-				customer_record[op.arg1] = op.arg2;
-				committed_index++;
-			}
-			// MakeReplicaConnections();
-			// replicas_connections_made = true;
-		}
-		MakeReplicaConnections();
-		// std::cout << "finished creating replicas" << std::endl;
-		ReplicaRequest request;
-		request.SetRequest(factory_id, committed_index, last_index, {1, req->laptop.GetCustomerId(), req->laptop.GetOrderNumber()});
-		for (auto &replica : replica_stubs)
-		{
-			// std::cout << "sending replica request to replica" << std::endl;
-			// ReplicaResponse response = replica->SendReplicaRequest(request);
-			replica->SendReplicaRequest(request);
-			// std::cout << "recieved confirmation from replica " << response.GetStatus() << std::endl;
-		}
-		customer_record[req->laptop.GetCustomerId()] = req->laptop.GetOrderNumber();
 
-		committed_index = smr_log.size() - 1;
+		cr_lock.lock();
+        if(req->laptop.GetLaptopType() == 1)
+        {
+            smr_lock.lock();
+            // std::cout << "special engineer thread smr_lock locked" << std::endl;
+            MapOp logOp = {1, req->laptop.GetCustomerId(), req->laptop.GetOrderNumber()};
+            smr_log.push_back(logOp);
+            WriteToLogFile(logOp);
+            // std::cout << "smr_log size: " << smr_log.size() << std::endl;
+            last_index += 1;
+            if (primary_id != factory_id) {
+                primary_id = factory_id;
+                while (committed_index < last_index) {
+                    MapOp op = smr_log[committed_index + 1];
+                    customer_record[op.arg1] = op.arg2;
+                    committed_index++;
+                }
+                // MakeReplicaConnections();
+                // replicas_connections_made = true;
+            }
+            MakeReplicaConnections();
+            // std::cout << "finished creating replicas" << std::endl;
+            ReplicaRequest request;
+            request.SetRequest(factory_id, committed_index, last_index,
+                               {1, req->laptop.GetCustomerId(), req->laptop.GetOrderNumber()});
+            for (auto &replica: replica_stubs) {
+                // std::cout << "sending replica request to replica" << std::endl;
+                // ReplicaResponse response = replica->SendReplicaRequest(request);
+                replica->SendReplicaRequest(request);
+                // std::cout << "recieved confirmation from replica " << response.GetStatus() << std::endl;
+            }
+            customer_record[req->laptop.GetCustomerId()] = req->laptop.GetOrderNumber();
+
+            committed_index = smr_log.size() - 1;
+            smr_lock.unlock();
+        } else if (req->laptop.GetLaptopType() == 2) {
+            std::this_thread::sleep_for(std::chrono::milliseconds (10));
+        }
 		cr_lock.unlock();
-		smr_lock.unlock();
+
 		// std::this_thread::sleep_for(std::chrono::microseconds(100));
 		req->laptop.SetExpertId(id);
 		req->prom.set_value(req->laptop);

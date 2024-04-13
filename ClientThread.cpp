@@ -18,7 +18,7 @@ void ClientThreadClass::
 	}
 	if (request_type == 3)
 	{
-		for (int i = 0; i < num_orders; i++)
+		for (int i = id; i <= num_orders; i+= id)
 		{
 			CustomerRequest customerRequest;
 			CustomerRecord customerRecord;

@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
 	}
     std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
 	timer.Start();
-	for (int i = 0; i < num_customers; i++)
+	for (int i = 1; i <= num_customers; i++)
 	{
 		auto client_cls = std::shared_ptr<ClientThreadClass>(new ClientThreadClass());
 		std::thread client_thread(&ClientThreadClass::ThreadBody, client_cls,

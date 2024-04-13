@@ -1,9 +1,7 @@
 #include <chrono>
 #include <iostream>
-#include <mutex>
 #include <thread>
 #include <vector>
-#include <map>
 
 #include "ServerSocket.h"
 #include "ServerThread.h"
@@ -15,6 +13,7 @@ int main(int argc, char *argv[])
 	int num_experts = 1;
 	int id_factory;
 	int num_replicas = 1;
+    int is_recover_from_log = 1;
 	ServerSocket socket;
 	LaptopFactory factory;
 	std::unique_ptr<ServerSocket> new_socket;
@@ -41,10 +40,20 @@ int main(int argc, char *argv[])
 			startindex += 3;
 		}
 	}
+    // ask user if they want to recover from log
+    std::cout << "Do you want to recover from log? (1 for yes, 0 for no): ";
+    std::cin >> is_recover_from_log;
+    std::cout << " recover from log set to " << is_recover_from_log << std::endl;
 	factory.SetFactoryId(id_factory);
     // log file name match with factory id
-    factory.RecoverFromLogFile();
+    // note time for recovery
+    std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
+    if (is_recover_from_log)
+        factory.RecoverFromLogFile();
 	factory.RecoverReplica();
+    std::chrono::high_resolution_clock::time_point endTime = std::chrono::high_resolution_clock::now();
+    long time = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count();
+    std::cout << "Recovery time: " << time << " microseconds" << std::endl;
 	for (int i = 0; i < num_experts; i++)
 	{
 		std::thread expert_thread(&LaptopFactory::ExpertThread,
@@ -54,7 +63,7 @@ int main(int argc, char *argv[])
 
 	if (!socket.Init(port))
 	{
-		std::cout << "Socket initialization failed" << std::endl;
+		std::cout << "Socket initialization failed: Please wait for 2 seconds and retry" << std::endl;
 		return 0;
 	}
 

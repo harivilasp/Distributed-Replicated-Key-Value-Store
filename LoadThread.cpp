@@ -7,40 +7,6 @@
 #include "LoadServerStub.h"
 #include "LoadServerClientStub.h"
 
-LaptopInfo LoadFactory::
-	CreateRegularLaptop(CustomerRequest customerRequest, int engineer_id)
-{
-	LaptopInfo laptop;
-	laptop.CopyOrder(customerRequest);
-	laptop.SetEngineerId(engineer_id);
-	laptop.SetExpertId(-1);
-	return laptop;
-}
-
-LaptopInfo LoadFactory::
-	CreateCustomLaptop(CustomerRequest customerRequest, int engineer_id)
-{
-	LaptopInfo laptop;
-	laptop.CopyOrder(customerRequest);
-	laptop.SetEngineerId(engineer_id);
-
-	std::promise<LaptopInfo> prom;
-	std::future<LaptopInfo> fut = prom.get_future();
-
-	std::unique_ptr<LoadRequest> req =
-		std::unique_ptr<LoadRequest>(new LoadRequest);
-	req->laptop = laptop;
-	req->prom = std::move(prom);
-
-	erq_lock.lock();
-	erq.push(std::move(req));
-	erq_cv.notify_one();
-	erq_lock.unlock();
-
-	laptop = fut.get();
-	return laptop;
-}
-
 void LoadFactory::
 	EngineerThread(std::unique_ptr<ServerSocket> socket, int id)
 {
@@ -55,9 +21,9 @@ void LoadFactory::
 	stub.Init(std::move(socket));
 	while (true)
 	{
-		std::cout << "LoadThread server:: EngineerThread while start " << id << std::endl;
+//		std::cout << "LoadThread server:: EngineerThread while start " << id << std::endl;
 		customerRequest = stub.ReceiveRequest();
-		std::cout << "LoadThread server:: EngineerThread request recieved " << id << std::endl;
+//		std::cout << "LoadThread server:: EngineerThread request recieved " << id << std::endl;
 		if (!customerRequest.IsValid())
 		{
 			// std::cout << "Connection broken engineer" << std::endl;
@@ -76,11 +42,11 @@ void LoadFactory::
                 client_stub = connect_server(primary_server_index);
                 attempts++;
             }
-            std::cout << "LoadThread server:: requesting laptop " << id << std::endl;
+//            std::cout << "LoadThread server:: requesting laptop " << id << std::endl;
             // remove from the cache for this customer ID
             remove_from_cache(customerRequest.GetCustomerId());
             laptop = client_stub->OrderLaptop(customerRequest);
-            std::cout << "LoadThread server:: laptop received " << id << std::endl;
+//            std::cout << "LoadThread server:: laptop received " << id << std::endl;
             // set in cache and send back to client
             stub.SendLaptop(laptop);
             break;
@@ -88,18 +54,18 @@ void LoadFactory::
         case 2: // read for one customer id
         {
             client_stub = connect_round_robin_server();
-            std::cout << "LoadThread server:: read request received " << id << std::endl;
+//            std::cout << "LoadThread server:: read request received " << id << std::endl;
             cr_lock.lock();
             int last_order;
             bool found;
             get_from_cache(customerRequest.GetCustomerId(), last_order, found);
             if (found) {
-                std::cout << "LoadThread server:: Read record from cache " << id << std::endl;
+//                std::cout << "LoadThread server:: Read record from cache " << id << std::endl;
                 record.SetRecord(customerRequest.GetCustomerId(), last_order);
             } else {
                 CustomerRecord temp = client_stub->ReadRecord(customerRequest);
-                std::cout << "LoadThread server:: Read record from server " << id << std::endl;
-                temp.Print();
+//                std::cout << "LoadThread server:: Read record from server " << id << std::endl;
+//                temp.Print();
                 // also set in cache
                 if (temp.GetLastOrder() != -1)
                 {
@@ -107,7 +73,7 @@ void LoadFactory::
                 }
                 record.SetRecord(customerRequest.GetCustomerId(), temp.GetLastOrder());
             }
-            std::cout << "LoadThread server:: read request returning " << id << std::endl;
+//            std::cout << "LoadThread server:: read request returning " << id << std::endl;
             stub.ReturnRecord(record);
             cr_lock.unlock();
             break;
@@ -144,9 +110,7 @@ void LoadFactory::ExpertThread(int id)
 
 LoadFactory::LoadFactory()
 {
-	last_index = -1;
-	committed_index = -1;
-	primary_id = -1;
+
 }
 
 void LoadFactory::AddReplica(int id, std::string ip, int port)
@@ -160,9 +124,9 @@ std::unique_ptr<ServerClientStub> LoadFactory::connect_server(int ind) {
     std::unique_ptr<ServerClientStub> stub = std::unique_ptr<ServerClientStub>(new ServerClientStub());
     if (stub->Init(replicas[ind].first, replicas[ind].second))
     {
-        std::cout << "LoadThread:: connected to server " << ind
-        << " : " << replicas[ind].first
-        <<" : "<< replicas[ind].second << std::endl;
+//        std::cout << "LoadThread:: connected to server " << ind
+//        << " : " << replicas[ind].first
+//        <<" : "<< replicas[ind].second << std::endl;
     } else {
         return nullptr;
     }
@@ -187,10 +151,10 @@ std::unique_ptr<ServerClientStub> LoadFactory::connect_round_robin_server() {
 }
 
 void LoadFactory::get_from_cache(int customer_id, int& last_order, bool& found) {
-    std::cout << "LoadThread:: Getting from cache " << customer_id << std::endl;
-    for (auto& item : cache_list) {
-        std::cout << "LoadThread:: Cache item " << item.first << " : " << item.second << std::endl;
-    }
+//    std::cout << "LoadThread:: Getting from cache " << customer_id << std::endl;
+//    for (auto& item : cache_list) {
+//        std::cout << "LoadThread:: Cache item " << item.first << " : " << item.second << std::endl;
+//    }
     auto mapIt = lru_map.find(customer_id);
     if (mapIt != lru_map.end()) {
         found = true;
@@ -200,13 +164,13 @@ void LoadFactory::get_from_cache(int customer_id, int& last_order, bool& found) 
         lru_map.erase(mapIt);
         lru_map[customer_id] = cache_list.begin();
     } else {
-        std:: cout << "LoadThread:: Not found in cache " << customer_id << std::endl;
+//        std:: cout << "LoadThread:: Not found in cache " << customer_id << std::endl;
         found = false;
     }
 }
 
 void LoadFactory::set_in_cache(int customer_id, int last_order) {
-    std::cout << "LoadThread:: Setting in cache " << customer_id << " : " << last_order << std::endl;
+//    std::cout << "LoadThread:: Setting in cache " << customer_id << " : " << last_order << std::endl;
     auto mapIt = lru_map.find(customer_id);
     // Check if the item already exists
     if (mapIt != lru_map.end()) {
@@ -215,7 +179,7 @@ void LoadFactory::set_in_cache(int customer_id, int last_order) {
     }
     cache_list.push_front({customer_id, last_order});
     lru_map[customer_id] = cache_list.begin();
-    std::cout << "LoadThread:: Cache size " << lru_map.size() << std::endl;
+//    std::cout << "LoadThread:: Cache size " << lru_map.size() << std::endl;
     if (lru_map.size() > cache_capacity) {
         // If the cache is full, remove the least recently used item
         int lru = cache_list.back().first;
@@ -225,7 +189,7 @@ void LoadFactory::set_in_cache(int customer_id, int last_order) {
 }
 
 void LoadFactory::remove_from_cache(int customer_id) {
-    std::cout << "LoadThread:: Removing from cache " << customer_id << std::endl;
+//    std::cout << "LoadThread:: Removing from cache " << customer_id << std::endl;
     std::lock_guard<std::mutex> lock(cr_lock); // Use the cache mutex to ensure thread safety
     auto it = lru_map.find(customer_id);
     if (it != lru_map.end()) {

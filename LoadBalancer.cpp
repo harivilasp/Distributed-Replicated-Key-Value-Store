@@ -1,9 +1,7 @@
 #include <chrono>
 #include <iostream>
-#include <mutex>
 #include <thread>
 #include <vector>
-#include <map>
 
 #include "ServerSocket.h"
 #include "LoadThread.h"
@@ -13,8 +11,8 @@ int main(int argc, char *argv[])
 	int port;
 	int engineer_cnt = 0;
 	int num_experts = 1;
-	int id_factory;
 	int num_replicas = 1;
+    int cache_capacity = 0;
 	ServerSocket socket;
 	LoadFactory factory;
 	std::unique_ptr<ServerSocket> new_socket;
@@ -27,13 +25,14 @@ int main(int argc, char *argv[])
 		// return 0;
 		port = 12347;
 		num_experts = 1;
-		id_factory = 111;
+        factory.cache_capacity = cache_capacity;
 	}
 	else
 	{
 		port = atoi(argv[1]);
-		num_replicas = atoi(argv[2]);
-		int startindex = 3;
+        factory.cache_capacity = atoi(argv[2]);
+		num_replicas = atoi(argv[3]);
+		int startindex = 4;
 		for (int k = 0; k < num_replicas; k++)
 		{
 			factory.AddReplica(atoi(argv[startindex]), argv[startindex + 1], atoi(argv[startindex + 2]));

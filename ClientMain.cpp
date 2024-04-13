@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 			num_customers = 1;
 		}
 	}
-
+    std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
 	timer.Start();
 	for (int i = 0; i < num_customers; i++)
 	{
@@ -66,7 +66,16 @@ int main(int argc, char *argv[])
 	{
 		timer.Merge(cls->GetTimer());
 	}
-	timer.PrintStats();
+    if(request_type == 3)
+    {
+        std::chrono::high_resolution_clock::time_point endTime = std::chrono::high_resolution_clock::now();
+        long time = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
+        std::cout << "Total time: " << time << " milliseconds" << std::endl;
+        std::cout << "Latency per customer: " << (double) time / num_orders << " milliseconds" << std::endl;
+    } else {
+        timer.PrintStats();
+    }
+
 
 	return 1;
 }

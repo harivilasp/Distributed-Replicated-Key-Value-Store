@@ -39,29 +39,15 @@ private:
 	std::mutex round_robin_lock;
     int primary_server_index = 0;
     std::mutex primary_server_lock;
-    int cache_capacity = 6;
+
     std::list<std::pair<int, int>> cache_list;
     std::unordered_map<int, std::list<std::pair<int, int>>::iterator> lru_map;
-
-	bool replicas_connections_made = false;
-	int last_index;		 // the last index of the smr_log that has data
-	int committed_index; // the last index of the smr_log where the
-						 // MapOp of the log entry is committed and
-						 // applied to the customer_record_cache
-	int primary_id;		 // the production factory id ( server id ).
-						 // initially set to -1.
-	int factory_id;		 // the id of the factory . This is assigned via
-						 // the command line arguments .
-
-	LaptopInfo CreateRegularLaptop(CustomerRequest order, int engineer_id);
-	LaptopInfo CreateCustomLaptop(CustomerRequest order, int engineer_id);
-
 public:
 	void EngineerThread(std::unique_ptr<ServerSocket> socket, int id);
 	void ExpertThread(int id);
 	LoadFactory();
-	void MakeReplicaConnections();
 	void AddReplica(int id, std::string ip, int port);
+    int cache_capacity = 0;
 
 private:
 	std::unique_ptr<ServerClientStub> connect_server(int id);

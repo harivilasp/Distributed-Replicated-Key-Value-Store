@@ -17,7 +17,7 @@ class ClientThreadClass {
 	ClientTimer timer;
 public:
 	ClientThreadClass();
-	void ThreadBody(std::string ip, int port, int id, int orders, int type);
+	void ThreadBody(std::string ip, int port, int id, int orders, int type, int num_customers);
 
 	ClientTimer GetTimer();
 };

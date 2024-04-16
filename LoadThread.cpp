@@ -180,7 +180,7 @@ void LoadFactory::set_in_cache(int customer_id, int last_order) {
     cache_list.push_front({customer_id, last_order});
     lru_map[customer_id] = cache_list.begin();
 //    std::cout << "LoadThread:: Cache size " << lru_map.size() << std::endl;
-    if (lru_map.size() > cache_capacity) {
+    if (lru_map.size() > static_cast<std::size_t>(cache_capacity)) {
         // If the cache is full, remove the least recently used item
         int lru = cache_list.back().first;
         lru_map.erase(lru);

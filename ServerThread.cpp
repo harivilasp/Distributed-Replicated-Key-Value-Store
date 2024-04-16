@@ -130,8 +130,8 @@ void LaptopFactory::
 		case 2: // read for one customer id
 
             // simulated read request processing time
-            CreateCustomLaptop(customerRequest, engineer_id);
-//            std::this_thread::sleep_for(std::chrono::milliseconds (10));
+//            CreateCustomLaptop(customerRequest, engineer_id);
+            std::this_thread::sleep_for(std::chrono::milliseconds (10));
             cr_lock.lock();
 			if (customer_record.find(customerRequest.GetCustomerId()) != customer_record.end())
 			{
@@ -311,8 +311,8 @@ void LaptopFactory::RecoverReplica()
 					smr_log.push_back(op);
                     WriteToLogFile(op);
 					customer_record[op.arg1] = op.arg2;
-					std::cout << "Recovering data Applied map op to customer record"
-							  << " op.arg1 " << op.arg1 << " op.arg2 " << op.arg2 << std::endl;
+//					std::cout << "Recovering data Applied map op to customer record"
+//							  << " op.arg1 " << op.arg1 << " op.arg2 " << op.arg2 << std::endl;
 				}
 				cr_lock.unlock();
 				smr_lock.unlock();

@@ -6,7 +6,7 @@
 ClientThreadClass::ClientThreadClass() {}
 
 void ClientThreadClass::
-	ThreadBody(std::string ip, int port, int id, int orders, int type)
+	ThreadBody(std::string ip, int port, int id, int orders, int type, int num_customers)
 {
 	customer_id = id;
 	num_orders = orders;
@@ -18,18 +18,51 @@ void ClientThreadClass::
 	}
 	if (request_type == 3)
 	{
-		for (int i = id; i <= num_orders; i+= id)
+		for (int i = 0; i < num_orders; i++)
 		{
-			CustomerRequest customerRequest;
-			CustomerRecord customerRecord;
-			customerRequest.SetCustomerRequest(i, i, 2);
-			customerRecord = stub.ReadRecord(customerRequest);
-			// std::cout << "Thread " << i << " customerRecord" << std::endl;
-			if (customerRecord.GetLastOrder() != -1)
-				customerRecord.Print();
+            if((i % num_customers) == id)
+            {
+//                std::cout << "thread " << id << " :processing: " << i << std::endl;
+                CustomerRequest customerRequest;
+                CustomerRecord customerRecord;
+                customerRequest.SetCustomerRequest(i, 0, 2);
+                customerRecord = stub.ReadRecord(customerRequest);
+                // std::cout << "Thread " << i << " customerRecord" << std::endl;
+                if (customerRecord.GetLastOrder() != -1)
+                    customerRecord.Print();
+            }
 		}
 		return;
 	}
+    if (request_type == 4)
+    {
+        int j = num_orders, i = 0;
+//        while(j < num_orders)
+        {
+            while (i <= j) {
+                CustomerRequest customerRequest;
+                CustomerRecord customerRecord;
+                customerRequest.SetCustomerRequest(i, 0, 2);
+                customerRecord = stub.ReadRecord(customerRequest);
+                // std::cout << "Thread " << i << " customerRecord" << std::endl;
+                if (customerRecord.GetLastOrder() != -1)
+                    customerRecord.Print();
+                i++;
+            }
+            while(i > 0) {
+                i--;
+                CustomerRequest customerRequest;
+                CustomerRecord customerRecord;
+                customerRequest.SetCustomerRequest(i, 0, 2);
+                customerRecord = stub.ReadRecord(customerRequest);
+                // std::cout << "Thread " << i << " customerRecord" << std::endl;
+                if (customerRecord.GetLastOrder() != -1)
+                    customerRecord.Print();
+            }
+//            j++;
+        }
+        return;
+    }
 	if (request_type == 2) // read for one customer id
 	{
 		CustomerRequest customerRequest;

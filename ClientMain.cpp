@@ -47,11 +47,11 @@ int main(int argc, char *argv[])
 	}
     std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
 	timer.Start();
-	for (int i = 1; i <= num_customers; i++)
+	for (int i = 0; i < num_customers; i++)
 	{
 		auto client_cls = std::shared_ptr<ClientThreadClass>(new ClientThreadClass());
 		std::thread client_thread(&ClientThreadClass::ThreadBody, client_cls,
-								  ip, port, i, num_orders, request_type);
+								  ip, port, i, num_orders, request_type, num_customers);
 
 		client_vector.push_back(std::move(client_cls));
 		thread_vector.push_back(std::move(client_thread));
@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
 	{
 		timer.Merge(cls->GetTimer());
 	}
-    if(request_type == 3)
+    if(request_type == 3 || request_type == 4)
     {
         std::chrono::high_resolution_clock::time_point endTime = std::chrono::high_resolution_clock::now();
         long time = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();

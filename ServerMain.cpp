@@ -49,7 +49,9 @@ int main(int argc, char *argv[])
     // note time for recovery
     std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
     if (is_recover_from_log)
+    {
         factory.RecoverFromLogFile();
+    }
 	factory.RecoverReplica();
     std::chrono::high_resolution_clock::time_point endTime = std::chrono::high_resolution_clock::now();
     long time = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count();
